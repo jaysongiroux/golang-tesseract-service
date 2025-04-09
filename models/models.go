@@ -13,6 +13,7 @@ const (
 
 	OrgRoleMember OrganizationMemberRole = "MEMBER"
 	OrgRoleAdmin  OrganizationMemberRole = "ADMIN"
+	OrgRoleOwner  OrganizationMemberRole = "OWNER"
 )
 
 type User struct {
@@ -39,6 +40,20 @@ type OrganizationMember struct {
 	Role           OrganizationMemberRole `gorm:"type:varchar(50);default:'MEMBER'"`
 	CreatedAt      time.Time              `gorm:"autoCreateTime"`
 	UpdatedAt      time.Time              `gorm:"autoUpdateTime"`
+}
+
+type OrganizationMemberAPI struct {
+	UserID         int64      `json:"user_id"`
+	OrganizationID int64      `json:"organization_id"`
+	KeyHash        string     `json:"key_hash"`
+	ExpiresAt      *time.Time `json:"expires_at"`
+}
+
+type OrganizationFileCache struct {
+	Hash      string    `json:"hash"`
+	CreatedAt time.Time `json:"created_at"`
+	Results   string    `json:"results"`
+	OCREngine string    `json:"ocr_engine"`
 }
 
 // TableName overrides the table name

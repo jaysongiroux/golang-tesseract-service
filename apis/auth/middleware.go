@@ -9,6 +9,8 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
 
+	"serverless-tesseract/db"
+	"serverless-tesseract/models"
 	"serverless-tesseract/utils"
 )
 
@@ -66,5 +68,48 @@ func AuthMiddleware() gin.HandlerFunc {
 		}
 
 		c.Next() // Proceed to the next handler if authorized
+	}
+}
+
+// APIMiddleware validates API keys
+func APIMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		apiKey := c.GetHeader("X-API-Key")
+
+		if apiKey == "" {
+			log.Println("AUTH: No API key provided")
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authentication required"})
+			c.Abort()
+			return
+		}
+
+		authed_user_id, authed_organization_id, err := utils.ValidateAndParseAPIKey(apiKey)
+		if err != nil {
+			log.Printf("AUTH: Invalid API key: %v", err)
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid API key"})
+			c.Abort()
+			return
+		}
+
+		// check against the database
+		var organization_member_api models.OrganizationMemberAPI
+		db.DB.Where("user_id = ? AND organization_id = ?", authed_user_id, authed_organization_id).First(&organization_member_api)
+
+		if !utils.CompareAPIKeys(&apiKey, &organization_member_api.KeyHash) {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid API key"})
+			c.Abort()
+			return
+		}
+
+		if !utils.CheckAPIKeyExpiration(organization_member_api.ExpiresAt) {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "API key expired"})
+			c.Abort()
+			return
+		}
+
+		c.Set("authed_user_id", authed_user_id)
+		c.Set("authed_organization_id", authed_organization_id)
+
+		c.Next()
 	}
 }

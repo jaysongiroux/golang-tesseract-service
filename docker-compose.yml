@@ -2,14 +2,15 @@ services:
   ocr-service:
     depends_on:
       - db
-    image: cosmtrek/air
-    working_dir: /project-package
+    build:
+      context: .
+      dockerfile: Dockerfile
     ports:
       - 8001:8001
     environment:
       DATABASE_URL: postgres://admin:password1!@db:5432/ocrDB
     volumes:
-      - ./:/project-package/
+      - ./:/app
 
   db:
     image: postgres:16

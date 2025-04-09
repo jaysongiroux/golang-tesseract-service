@@ -19,6 +19,8 @@ func Run(db *gorm.DB) {
 		&models.User{},
 		&models.Organization{},
 		&models.OrganizationMember{},
+		&models.OrganizationMemberAPI{},
+		&models.OrganizationFileCache{},
 	)
 
 	if err != nil {
