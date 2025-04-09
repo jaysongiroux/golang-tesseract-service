@@ -49,25 +49,21 @@ func OCRService(c *gin.Context) {
 	fileHash := utils.GetSHA256Hash(fileBytes)
 
 	if cache_policy == "cache_only" {
-		results, err := services.GetFileHashCache(&fileHash)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Failed to get file hash cache: %v", err)})
-			return
-		}
+		results := services.GetFileHashCache(&fileHash)
 		c.JSON(http.StatusOK, gin.H{"text": results})
 		return
 	}
 
 	// if the cache policy is not no_cache, get the text from the cache
-	if cache_policy != "no_cache" {
-		results, err := services.GetFileHashCache(&fileHash)
-		if err != nil {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": fmt.Sprintf("Failed to get file hash cache: %v", err)})
-			return
-		}
+	cache_results := services.GetFileHashCache(&fileHash)
+	if cache_results != "" {
+		c.JSON(http.StatusOK, gin.H{"text": cache_results})
+		return
+	}
 
-		if results != "" {
-			c.JSON(http.StatusOK, gin.H{"text": results})
+	if cache_policy != "no_cache" {
+		if cache_results != "" {
+			c.JSON(http.StatusOK, gin.H{"text": cache_results})
 			return
 		}
 	}
@@ -106,7 +102,10 @@ func OCRService(c *gin.Context) {
 		}
 	}
 
-	services.SaveFileHashCache(&fileHash, &text)
+	// if no cache results, save the text to the cache
+	if cache_results == "" {
+		services.SaveFileHashCache(&fileHash, &text)
+	}
 
 	// Return the OCR text
 	c.JSON(http.StatusOK, gin.H{

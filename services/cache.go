@@ -1,23 +1,22 @@
 package services
 
 import (
-	"fmt"
 	"serverless-tesseract/db"
 	"serverless-tesseract/models"
 	"time"
 )
 
-func GetFileHashCache(hash *string) (string, error) {
+func GetFileHashCache(hash *string) string {
 	// check if the hash exists in the database
 	var organizationFileCache models.OrganizationFileCache
 	db.DB.Where("hash = ?", hash).First(&organizationFileCache)
 
 	// if the hash exists, return the text
 	if organizationFileCache.Hash == *hash {
-		return organizationFileCache.Results, nil
+		return organizationFileCache.Results
 	}
 
-	return "", fmt.Errorf("hash not found in database")
+	return ""
 }
 
 func SaveFileHashCache(hash *string, text *string) error {
