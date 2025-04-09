@@ -54,12 +54,7 @@ func OCRService(c *gin.Context) {
 		return
 	}
 
-	// if the cache policy is not no_cache, get the text from the cache
 	cache_results := services.GetFileHashCache(&fileHash)
-	if cache_results != "" {
-		c.JSON(http.StatusOK, gin.H{"text": cache_results})
-		return
-	}
 
 	if cache_policy != "no_cache" {
 		if cache_results != "" {
