@@ -1,0 +1,12 @@
+package utils
+
+import (
+	"os"
+	"time"
+)
+
+var SECRET_KEY = os.Getenv("SECRET_KEY")
+
+var JWT_EXPIRATION_TIME = time.Hour * 1
+
+var ORG_USER_LIMIT = 3

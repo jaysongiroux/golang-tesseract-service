@@ -1,0 +1,39 @@
+services:
+  ocr-service:
+    depends_on:
+      - db
+    image: cosmtrek/air
+    working_dir: /project-package
+    ports:
+      - 8001:8001
+    environment:
+      DATABASE_URL: postgres://admin:password1!@db:5432/ocrDB
+    volumes:
+      - ./:/project-package/
+
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: ocrDB
+    ports:
+      - 5432:5432
+    volumes:
+      - local_pgdata:/var/lib/postgresql/data
+
+  pg-admin:
+    image: dpage/pgadmin4
+    container_name: pg-admin
+    restart: always
+    ports:
+      - "8888:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: password
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+
+volumes:
+  local_pgdata:
+  pgadmin-data:
