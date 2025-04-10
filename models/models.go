@@ -16,6 +16,12 @@ const (
 	OrgRoleOwner  OrganizationMemberRole = "OWNER"
 )
 
+type OCREngine string
+
+const (
+	OCREngineTesseract OCREngine = "tesseract"
+)
+
 type User struct {
 	ID           int64     `gorm:"primaryKey;autoIncrement"`
 	FirstName    string    `gorm:"not null"`
@@ -54,6 +60,14 @@ type OrganizationFileCache struct {
 	CreatedAt time.Time `json:"created_at"`
 	Results   string    `json:"results"`
 	OCREngine string    `json:"ocr_engine"`
+}
+
+type OrganizationOCRRequest struct {
+	ID         int64     `json:"id"`
+	CreatedAt  time.Time `json:"created_at"`
+	CacheHit   bool      `json:"cache_hit"`
+	NumOfPages int32     `json:"num_of_pages"`
+	OCREngine  OCREngine `json:"ocr_engine"`
 }
 
 // TableName overrides the table name

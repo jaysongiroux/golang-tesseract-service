@@ -5,6 +5,8 @@ import (
 	"encoding/base64"
 	"encoding/hex"
 	"errors"
+	"serverless-tesseract/db"
+	"serverless-tesseract/models"
 	"strconv"
 	"time"
 
@@ -27,6 +29,33 @@ func GetFormattedAuthedUserIdFromContext(c *gin.Context) (*int64, error) {
 
 	return &authed_user_id_int, nil
 
+}
+
+func GenerateJWTToken(user *models.User) (string, string, error) {
+	newToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"email": user.Email,
+		"id":    user.ID,
+		"role":  user.Role,
+		"exp":   time.Now().Add(JWT_EXPIRATION_TIME).Unix(),
+	})
+
+	newTokenString, err := newToken.SignedString([]byte(SECRET_KEY))
+	if err != nil {
+		return "", "", err
+	}
+
+	refreshToken := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"email": user.Email,
+		"id":    user.ID,
+		"role":  user.Role,
+	})
+
+	refreshTokenString, err := refreshToken.SignedString([]byte(SECRET_KEY))
+	if err != nil {
+		return "", "", err
+	}
+
+	return newTokenString, refreshTokenString, nil
 }
 
 func CompareAPIKeys(apiKey *string, apiKeyHash *string) bool {
@@ -107,4 +136,19 @@ func ValidateAndParseAPIKey(apiKey string) (*int64, *int64, error) {
 func GetSHA256Hash(data []byte) string {
 	hash := sha256.Sum256(data)
 	return hex.EncodeToString(hash[:])
+}
+
+func CreateOCRRequest(c *gin.Context, num_of_pages *int32, cache_hit *bool, ocr_engine *models.OCREngine) *models.OrganizationOCRRequest {
+	request := models.OrganizationOCRRequest{
+		ID:         time.Now().Unix(),
+		CreatedAt:  time.Now(),
+		CacheHit:   *cache_hit,
+		NumOfPages: *num_of_pages,
+		OCREngine:  *ocr_engine,
+	}
+
+	// add to db
+	db.DB.Create(&request)
+
+	return &request
 }

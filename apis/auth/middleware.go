@@ -23,7 +23,6 @@ func AuthMiddleware() gin.HandlerFunc {
 		tokenString = strings.TrimPrefix(tokenString, "Bearer ")
 
 		if tokenString == "" {
-			log.Println("AUTH: No token provided")
 			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authentication required"})
 			c.Abort()
 			return
@@ -32,22 +31,19 @@ func AuthMiddleware() gin.HandlerFunc {
 		// Parse the token
 		token, err := jwt.Parse(tokenString, func(token *jwt.Token) (interface{}, error) {
 			if _, ok := token.Method.(*jwt.SigningMethodHMAC); !ok {
-				log.Printf("AUTH: Invalid signing method: %v", token.Header["alg"])
 				return nil, http.ErrAbortHandler
 			}
 			return []byte(utils.SECRET_KEY), nil
 		})
 
 		if err != nil {
-			log.Printf("AUTH: Token parsing error: %v", err)
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+			c.JSON(http.StatusUnauthorized, utils.ErrorResponse{Error: utils.ErrInvalidToken.Error()})
 			c.Abort()
 			return
 		}
 
 		if !token.Valid {
-			log.Println("AUTH: Token is invalid")
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token"})
+			c.JSON(http.StatusUnauthorized, utils.ErrorResponse{Error: utils.ErrInvalidToken.Error()})
 			c.Abort()
 			return
 		}
@@ -61,8 +57,7 @@ func AuthMiddleware() gin.HandlerFunc {
 
 			c.Set("authed_user_id", authed_user_id_string)
 		} else {
-			log.Println("AUTH: Failed to extract claims")
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid token format"})
+			c.JSON(http.StatusUnauthorized, utils.ErrorResponse{Error: utils.ErrInvalidToken.Error()})
 			c.Abort()
 			return
 		}
@@ -78,7 +73,7 @@ func APIMiddleware() gin.HandlerFunc {
 
 		if apiKey == "" {
 			log.Println("AUTH: No API key provided")
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Authentication required"})
+			c.JSON(http.StatusUnauthorized, utils.ErrorResponse{Error: utils.ErrTokenRequired.Error()})
 			c.Abort()
 			return
 		}
@@ -86,7 +81,7 @@ func APIMiddleware() gin.HandlerFunc {
 		authed_user_id, authed_organization_id, err := utils.ValidateAndParseAPIKey(apiKey)
 		if err != nil {
 			log.Printf("AUTH: Invalid API key: %v", err)
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid API key"})
+			c.JSON(http.StatusUnauthorized, utils.ErrorResponse{Error: utils.ErrInvalidAPIKey.Error()})
 			c.Abort()
 			return
 		}
@@ -96,13 +91,13 @@ func APIMiddleware() gin.HandlerFunc {
 		db.DB.Where("user_id = ? AND organization_id = ?", authed_user_id, authed_organization_id).First(&organization_member_api)
 
 		if !utils.CompareAPIKeys(&apiKey, &organization_member_api.KeyHash) {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "Invalid API key"})
+			c.JSON(http.StatusUnauthorized, utils.ErrorResponse{Error: utils.ErrInvalidAPIKey.Error()})
 			c.Abort()
 			return
 		}
 
 		if !utils.CheckAPIKeyExpiration(organization_member_api.ExpiresAt) {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "API key expired"})
+			c.JSON(http.StatusUnauthorized, utils.ErrorResponse{Error: utils.ErrAPIKeyExpired.Error()})
 			c.Abort()
 			return
 		}

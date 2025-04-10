@@ -21,6 +21,7 @@ func Run(db *gorm.DB) {
 		&models.OrganizationMember{},
 		&models.OrganizationMemberAPI{},
 		&models.OrganizationFileCache{},
+		&models.OrganizationOCRRequest{},
 	)
 
 	if err != nil {

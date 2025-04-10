@@ -12,19 +12,31 @@ import (
 	"github.com/gin-gonic/gin"
 )
 
+// CreateOrganization godoc
+//
+//	@Summary		Create an organization
+//	@Description	create an organization with a name
+//	@Tags			Organization
+//	@Accept			json
+//	@Produce		json
+//	@Param			org_name	formData	string	true	"Organization Name"
+//	@Success		200			{object}	models.Organization
+//	@Failure		500			{object}	utils.ErrorResponse
+//	@Failure		400			{object}	utils.ErrorResponse
+//	@Router			/api/organization [post]
 func CreateOrganization(c *gin.Context) {
+	org_name := c.PostForm("org_name")
+
 	// get user from context
 	authed_user_id_int, err := utils.GetFormattedAuthedUserIdFromContext(c)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get authed user id"})
+		c.JSON(http.StatusInternalServerError, utils.ErrorResponse{Error: "Failed to get authed user id"})
 		return
 	}
 
-	org_name := c.PostForm("org_name")
-
 	// validate first name
 	if !utils.ValidateOrganizationName(org_name) {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid Organization Name"})
+		c.JSON(http.StatusBadRequest, utils.ErrorResponse{Error: "Invalid Organization Name"})
 		return
 	}
 
@@ -34,7 +46,7 @@ func CreateOrganization(c *gin.Context) {
 	db.DB.Model(&models.OrganizationMember{}).Where("user_id = ?", authed_user_id_int).Count(&organization_member_count)
 
 	if organization_member_count >= int64(utils.ORG_USER_LIMIT) {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "User has reached the maximum number of organizations"})
+		c.JSON(http.StatusBadRequest, utils.ErrorResponse{Error: "User has reached the maximum number of organizations"})
 		return
 	}
 
@@ -46,7 +58,7 @@ func CreateOrganization(c *gin.Context) {
 	result := db.DB.Create(&organization)
 
 	if result.Error != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to create organization"})
+		c.JSON(http.StatusInternalServerError, utils.ErrorResponse{Error: "Failed to create organization"})
 		return
 	}
 
@@ -63,14 +75,25 @@ func CreateOrganization(c *gin.Context) {
 		return
 	}
 
-	c.JSON(http.StatusAccepted, gin.H{"message": "Organization created", "organization": organization, "organization_member": organization_member})
+	c.JSON(http.StatusAccepted, organization)
 }
 
+// GetOrganizations godoc
+//
+//	@Summary		Get all organizations for the authenticated user
+//	@Description	get all organizations for the authenticated user
+//	@Tags			Organization
+//	@Accept			json
+//	@Produce		json
+//	@Success		200	{object}	[]models.Organization
+//	@Failure		500	{object}	utils.ErrorResponse
+//	@Failure		400	{object}	utils.ErrorResponse
+//	@Router			/api/organization [get]
 func GetOrganizations(c *gin.Context) {
 	// get user from context
 	authed_user_id_int, err := utils.GetFormattedAuthedUserIdFromContext(c)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get authed user id"})
+		c.JSON(http.StatusInternalServerError, utils.ErrorResponse{Error: "Failed to get authed user id"})
 		return
 	}
 
@@ -85,18 +108,30 @@ func GetOrganizations(c *gin.Context) {
 		Error
 
 	if resErr != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get organizations"})
+		c.JSON(http.StatusInternalServerError, utils.ErrorResponse{Error: "Failed to get organizations"})
 		return
 	}
 
 	c.JSON(http.StatusAccepted, gin.H{"organizations": organizations})
 }
 
+// GetOrganizationMembers godoc
+//
+//	@Summary		Get all members of an organization
+//	@Description	get all members of an organization
+//	@Tags			Organization Members
+//	@Accept			json
+//	@Produce		json
+//	@Param			organization_id	path		string	true	"Organization ID"
+//	@Success		200				{object}	[]models.OrganizationMember
+//	@Failure		500				{object}	utils.ErrorResponse
+//	@Failure		400				{object}	utils.ErrorResponse
+//	@Router			/api/organization/:organization_id/members [get]
 func GetOrganizationMembers(c *gin.Context) {
 	// get user from context
 	authed_user_id_int, err := utils.GetFormattedAuthedUserIdFromContext(c)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get authed user id"})
+		c.JSON(http.StatusInternalServerError, utils.ErrorResponse{Error: "Failed to get authed user id"})
 		return
 	}
 
@@ -107,7 +142,7 @@ func GetOrganizationMembers(c *gin.Context) {
 	if organization_member.Role != models.OrgRoleAdmin &&
 		organization_member.Role != models.OrgRoleOwner &&
 		organization_member.Role != models.OrgRoleMember {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User is not an admin of the organization"})
+		c.JSON(http.StatusUnauthorized, utils.ErrorResponse{Error: "User is not an admin of the organization"})
 		return
 	}
 
@@ -124,26 +159,38 @@ func GetOrganizationMembers(c *gin.Context) {
 		Error
 
 	if resErr != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get organization members"})
+		c.JSON(http.StatusInternalServerError, utils.ErrorResponse{Error: "Failed to get organization members"})
 		return
 	}
 
-	c.JSON(http.StatusAccepted, gin.H{"message": "Organization members fetched", "organization_members": organization_members})
+	c.JSON(http.StatusAccepted, organization_members)
 }
 
+// GetOrganization godoc
+//
+//	@Summary		Get an organization
+//	@Description	get an organization
+//	@Tags			Organization
+//	@Accept			json
+//	@Produce		json
+//	@Param			organization_id	path		string	true	"Organization ID"
+//	@Success		200				{object}	models.Organization
+//	@Failure		500				{object}	utils.ErrorResponse
+//	@Failure		400				{object}	utils.ErrorResponse
+//	@Router			/api/organization/:organization_id [get]
 func GetOrganization(c *gin.Context) {
 	// get user from context
 	organization_id := c.Param("organization_id")
 
 	organization_id_int, err := strconv.ParseInt(organization_id, 10, 64)
 	if err != nil {
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid organization id"})
+		c.JSON(http.StatusBadRequest, utils.ErrorResponse{Error: "Invalid organization id"})
 		return
 	}
 
 	authed_user_id_int, err := utils.GetFormattedAuthedUserIdFromContext(c)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get authed user id"})
+		c.JSON(http.StatusInternalServerError, utils.ErrorResponse{Error: "Failed to get authed user id"})
 		return
 	}
 
@@ -153,7 +200,7 @@ func GetOrganization(c *gin.Context) {
 
 	// if there is no organization member, return unauthorized
 	if organization_member.UserID != *authed_user_id_int {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User is not a member of the organization"})
+		c.JSON(http.StatusUnauthorized, utils.ErrorResponse{Error: "User is not a member of the organization"})
 		return
 	}
 
@@ -162,18 +209,30 @@ func GetOrganization(c *gin.Context) {
 	db.DB.Where("id = ?", organization_id_int).First(&organization)
 
 	if organization.ID != organization_id_int {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "Organization not found"})
+		c.JSON(http.StatusUnauthorized, utils.ErrorResponse{Error: "Organization not found"})
 		return
 	}
 
 	c.JSON(http.StatusAccepted, gin.H{"organization": organization})
 }
 
+// CreateOrganizationMemberAPI godoc
+//
+//	@Summary		Create an API key for the authenticated user
+//	@Description	create an API key for the authenticated user
+//	@Tags			Organization Member
+//	@Accept			json
+//	@Produce		json
+//	@Param			organization_id	path		string	true	"Organization ID"
+//	@Success		200				{object}	utils.APITokenResponse
+//	@Failure		500				{object}	utils.ErrorResponse
+//	@Failure		400				{object}	utils.ErrorResponse
+//	@Router			/api/organization/:organization_id/api-key [post]
 func CreateOrganizationMemberAPI(c *gin.Context) {
 	// get user from context
 	authed_user_id_int, err := utils.GetFormattedAuthedUserIdFromContext(c)
 	if err != nil {
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to get authed user id"})
+		c.JSON(http.StatusInternalServerError, utils.ErrorResponse{Error: "Failed to get authed user id"})
 		return
 	}
 
@@ -184,14 +243,14 @@ func CreateOrganizationMemberAPI(c *gin.Context) {
 	db.DB.Where("user_id = ? AND organization_id = ? AND role = ?", authed_user_id_int, organization_id, models.OrgRoleAdmin).First(&organization_member)
 
 	if organization_member.Role != models.OrgRoleAdmin {
-		c.JSON(http.StatusUnauthorized, gin.H{"error": "User is not an admin of the organization"})
+		c.JSON(http.StatusUnauthorized, utils.ErrorResponse{Error: "User is not an admin of the organization"})
 		return
 	}
 
 	organization_id_int, err := strconv.ParseInt(organization_id, 10, 64)
 	if err != nil {
 		log.Printf("Failed to parse organization id: %v", err)
-		c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid organization id"})
+		c.JSON(http.StatusBadRequest, utils.ErrorResponse{Error: "Invalid organization id"})
 		return
 	}
 
@@ -203,7 +262,7 @@ func CreateOrganizationMemberAPI(c *gin.Context) {
 		expiration_time_offset_hours_int, err := strconv.Atoi(expiration_time_offset_hours)
 		if err != nil {
 			log.Printf("Failed to parse expiration time offset hours: %v", err)
-			c.JSON(http.StatusBadRequest, gin.H{"error": "Invalid expiration time offset hours"})
+			c.JSON(http.StatusBadRequest, utils.ErrorResponse{Error: "Invalid expiration time offset hours"})
 			return
 		}
 
@@ -219,7 +278,7 @@ func CreateOrganizationMemberAPI(c *gin.Context) {
 
 	if err != nil {
 		log.Printf("Failed to generate API key: %v", err)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to generate API key"})
+		c.JSON(http.StatusInternalServerError, utils.ErrorResponse{Error: "Failed to generate API key"})
 		return
 	}
 
@@ -242,9 +301,9 @@ func CreateOrganizationMemberAPI(c *gin.Context) {
 
 	if result.Error != nil {
 		log.Printf("Failed to save API key: %v", result.Error)
-		c.JSON(http.StatusInternalServerError, gin.H{"error": "Failed to save API key"})
+		c.JSON(http.StatusInternalServerError, utils.ErrorResponse{Error: "Failed to save API key"})
 		return
 	}
 
-	c.JSON(http.StatusAccepted, gin.H{"message": "API key created", "api_key": api_key})
+	c.JSON(http.StatusAccepted, utils.APITokenResponse{Token: api_key})
 }
