@@ -57,6 +57,57 @@ If you make changes to your route annotations, regenerate the Swagger docs using
 swag init
 ```
 
+## 🚀 Production Deployment
+
+This project includes a production-ready Dockerfile for cloud deployment.
+
+### Prerequisites
+- Docker installed on your production server or cloud environment
+- Access to a PostgreSQL database (either managed service or self-hosted)
+- Proper network security configured for your production environment
+
+### Deployment Steps
+
+1. Clone the repository on your build server
+```bash
+git clone https://github.com/jaysongiroux/tesseract-ocr-service.**git**
+cd tesseract-ocr-service
+```
+
+2. Build the Docker image
+```bash
+docker build -f Dockerfile.prod -t tesseract-ocr-service:latest .
+```
+
+1. Run the built docker image
+```bash
+docker run -d \
+  --name tesseract-ocr-service \
+  -p 8001:8001 \
+  -e DATABASE_URL='postgres://admin:password1!@192.168.1.97:5432/ocrDB' \
+  -e SECRET_KEY=your-secret-key \
+  -e ENV=production \
+  tesseract-ocr-service:latest
+```
+
+### Production Configuration
+
+The production setup includes:
+- Multi-stage Docker build for a smaller, optimized container
+- Secure environment configuration through environment variables
+
+### Continuous Deployment
+
+This project includes a GitHub Actions workflow for continuous deployment to Digital Ocean:
+
+1. Automatically builds the production Docker image
+2. Pushes the image to Digital Ocean Container Registry
+3. Deploys to either Digital Ocean App Platform or Kubernetes
+
+For setup instructions, see the [deployment guide](deployment-guide.md).
+
+## Technical Docs
+
 ### 🔐 Authentication
 This service uses JWT authentication. You'll need to:
 
@@ -72,6 +123,7 @@ Swagger will guide you through the available endpoints.
 MIT
 
 ## 🛠️ Future Plans
-- Deployment support (likely via Docker)
-- Role-based access control
+- Organization role-based access control
 - Rate limiting / usage tracking
+- Monitoring and alerting integration
+- Horizontal scaling configuration for high-load scenarios
