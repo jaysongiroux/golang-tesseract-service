@@ -62,9 +62,7 @@ jobs:
           push: true
           tags: |
             ${{ env.REGISTRY }}/${{ secrets.DIGITALOCEAN_REGISTRY_NAME }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}
-            ${{ env.REGISTRY }}/${{ secrets.DIGITALOCEAN_REGISTRY_NAME }}/${{ env.IMAGE_NAME }}:${{ github.sha }}
-            ${{ env.REGISTRY }}/${{ secrets.DIGITALOCEAN_REGISTRY_NAME }}/${{ env.IMAGE_NAME }}:latest
-
+            
       # - name: Deploy to Digital Ocean App Platform
       #   if: ${{ secrets.DIGITALOCEAN_APP_ID != '' }}
       #   run: |
