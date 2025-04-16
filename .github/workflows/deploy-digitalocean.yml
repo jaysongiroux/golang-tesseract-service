@@ -1,10 +1,6 @@
 name: Deploy to Digital Ocean
 
 on:
-  push:
-    branches: [ master ]
-    tags:
-      - 'v*.*.*'
   workflow_dispatch:
     inputs:
       version:
