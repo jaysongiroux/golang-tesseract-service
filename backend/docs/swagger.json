@@ -1,0 +1,184 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "This is a lightweight API with JWT authentication for OCR and LLM services.",
+        "title": "OCR API",
+        "contact": {},
+        "license": {
+            "name": "MIT",
+            "url": "https://opensource.org/licenses/MIT"
+        },
+        "version": "1.0"
+    },
+    "host": "localhost:8001",
+    "basePath": "/api/",
+    "paths": {
+        "/api/ocr": {
+            "post": {
+                "description": "OCR Service for the OCR Service",
+                "consumes": [
+                    "multipart/form-data"
+                ],
+                "tags": [
+                    "OCR"
+                ],
+                "summary": "OCR Service",
+                "parameters": [
+                    {
+                        "type": "string",
+                        "description": "API Key",
+                        "name": "X-API-Key",
+                        "in": "header",
+                        "required": true
+                    },
+                    {
+                        "type": "file",
+                        "description": "File",
+                        "name": "file",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "Cache Policy (options: cache_first, no_cache, cache_only)",
+                        "name": "cache_policy",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "string",
+                        "description": "OCR Engine (options: TESSERACT, EASYOCR, DOCTR)",
+                        "name": "engine",
+                        "in": "formData",
+                        "required": true
+                    },
+                    {
+                        "type": "boolean",
+                        "description": "Raw (options: true, false)",
+                        "name": "raw",
+                        "in": "formData"
+                    },
+                    {
+                        "type": "string",
+                        "description": "Organization ID",
+                        "name": "organization_id",
+                        "in": "formData",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/utils.OCRResponseList"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    },
+                    "500": {
+                        "description": "Internal Server Error",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrorResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "utils.BBox": {
+            "type": "object",
+            "properties": {
+                "bottomLeft": {
+                    "$ref": "#/definitions/utils.XY"
+                },
+                "bottomRight": {
+                    "$ref": "#/definitions/utils.XY"
+                },
+                "topLeft": {
+                    "$ref": "#/definitions/utils.XY"
+                },
+                "topRight": {
+                    "$ref": "#/definitions/utils.XY"
+                }
+            }
+        },
+        "utils.ErrorResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string",
+                    "example": "Error message"
+                }
+            }
+        },
+        "utils.OCREngineType": {
+            "type": "string",
+            "enum": [
+                "TESSERACT",
+                "EASYOCR",
+                "DOCTR"
+            ],
+            "x-enum-varnames": [
+                "EngineTesseract",
+                "EngineEasyOCR",
+                "EngineDoctoR"
+            ]
+        },
+        "utils.OCRResponse": {
+            "type": "object",
+            "properties": {
+                "bbox": {
+                    "$ref": "#/definitions/utils.BBox"
+                },
+                "confidence": {
+                    "type": "number",
+                    "example": 0.5
+                },
+                "page_number": {
+                    "type": "integer",
+                    "example": 1
+                },
+                "text": {
+                    "type": "string",
+                    "example": "hello world"
+                }
+            }
+        },
+        "utils.OCRResponseList": {
+            "type": "object",
+            "properties": {
+                "engine": {
+                    "$ref": "#/definitions/utils.OCREngineType"
+                },
+                "number_of_tokens": {
+                    "type": "integer",
+                    "example": 100
+                },
+                "ocr_responses": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/utils.OCRResponse"
+                    }
+                }
+            }
+        },
+        "utils.XY": {
+            "type": "object",
+            "properties": {
+                "x": {
+                    "type": "integer",
+                    "example": 10
+                },
+                "y": {
+                    "type": "integer",
+                    "example": 10
+                }
+            }
+        }
+    }
+}

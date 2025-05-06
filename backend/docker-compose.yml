@@ -1,0 +1,46 @@
+services:
+  ocr-service:
+    depends_on:
+      - db
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - 8001:8001
+    environment:
+      DATABASE_URL: postgres://admin:password@db:5432/ocrDB
+      ENV: development
+      DB_SSL_MODE: disable
+      SECRET_KEY: yoursecretkey
+      POLAR_ACCESS_TOKEN: ${POLAR_ACCESS_TOKEN}
+      POLAR_OCR_SERVICE_ID: ${POLAR_OCR_SERVICE_ID}
+      POLAR_OCR_METER_ID: ${POLAR_OCR_METER_ID}
+    volumes:
+      - ./:/app
+
+  db:
+    image: postgres:16
+    environment:
+      POSTGRES_USER: admin
+      POSTGRES_PASSWORD: password
+      POSTGRES_DB: ocrDB
+    ports:
+      - 5432:5432
+    volumes:
+      - local_pgdata:/var/lib/postgresql/data
+
+  pg-admin:
+    image: dpage/pgadmin4
+    container_name: pg-admin
+    restart: always
+    ports:
+      - "8888:80"
+    environment:
+      PGADMIN_DEFAULT_EMAIL: admin@admin.com
+      PGADMIN_DEFAULT_PASSWORD: password
+    volumes:
+      - pgadmin-data:/var/lib/pgadmin
+
+volumes:
+  local_pgdata:
+  pgadmin-data:

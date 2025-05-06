@@ -1,0 +1,48 @@
+package services
+
+import (
+	"fmt"
+	externalscripts "serverless-tesseract/services/external_scripts"
+	"serverless-tesseract/utils"
+	"strconv"
+)
+
+// RunOCR processes an image with tesseract and returns the text
+func RunOCR(imageBytes []byte, engine utils.OCREngineType, pageNumber int, raw bool) (utils.OCRResponseList, error) {
+	switch engine {
+	case utils.EngineTesseract:
+		return tesseractOCR(imageBytes, pageNumber, raw)
+	case utils.EngineEasyOCR:
+		return easyOCR(imageBytes, pageNumber, raw)
+	case utils.EngineDoctoR:
+		return doctrOCR(imageBytes, pageNumber, raw)
+	default:
+		return utils.OCRResponseList{}, fmt.Errorf("invalid engine: %s", engine)
+	}
+}
+
+func tesseractOCR(imageBytes []byte, pageNumber int, raw bool) (utils.OCRResponseList, error) {
+	args := []string{strconv.Itoa(pageNumber)}
+	if raw {
+		args = append(args, "raw")
+	}
+	return externalscripts.ExecutePythonOCREngineScript("tesseract.py", imageBytes, args...)
+}
+
+func easyOCR(imageBytes []byte, pageNumber int, raw bool) (utils.OCRResponseList, error) {
+	// args := []string{strconv.Itoa(pageNumber)}
+	// if raw {
+	// 	args = append(args, "raw")
+	// }
+	// return externalscripts.ExecutePythonOCREngineScript("easyocr.py", imageBytes, args...)
+	return utils.OCRResponseList{}, fmt.Errorf("easyocr not implemented")
+}
+
+func doctrOCR(imageBytes []byte, pageNumber int, raw bool) (utils.OCRResponseList, error) {
+	// args := []string{strconv.Itoa(pageNumber)}
+	// if raw {
+	// 	args = append(args, "raw")
+	// }
+	// return externalscripts.ExecutePythonOCREngineScript("doctr.py", imageBytes, args...)
+	return utils.OCRResponseList{}, fmt.Errorf("doctr not implemented")
+}

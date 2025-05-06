@@ -1,0 +1,126 @@
+basePath: /api/
+definitions:
+  utils.BBox:
+    properties:
+      bottomLeft:
+        $ref: '#/definitions/utils.XY'
+      bottomRight:
+        $ref: '#/definitions/utils.XY'
+      topLeft:
+        $ref: '#/definitions/utils.XY'
+      topRight:
+        $ref: '#/definitions/utils.XY'
+    type: object
+  utils.ErrorResponse:
+    properties:
+      error:
+        example: Error message
+        type: string
+    type: object
+  utils.OCREngineType:
+    enum:
+    - TESSERACT
+    - EASYOCR
+    - DOCTR
+    type: string
+    x-enum-varnames:
+    - EngineTesseract
+    - EngineEasyOCR
+    - EngineDoctoR
+  utils.OCRResponse:
+    properties:
+      bbox:
+        $ref: '#/definitions/utils.BBox'
+      confidence:
+        example: 0.5
+        type: number
+      page_number:
+        example: 1
+        type: integer
+      text:
+        example: hello world
+        type: string
+    type: object
+  utils.OCRResponseList:
+    properties:
+      engine:
+        $ref: '#/definitions/utils.OCREngineType'
+      number_of_tokens:
+        example: 100
+        type: integer
+      ocr_responses:
+        items:
+          $ref: '#/definitions/utils.OCRResponse'
+        type: array
+    type: object
+  utils.XY:
+    properties:
+      x:
+        example: 10
+        type: integer
+      "y":
+        example: 10
+        type: integer
+    type: object
+host: localhost:8001
+info:
+  contact: {}
+  description: This is a lightweight API with JWT authentication for OCR and LLM services.
+  license:
+    name: MIT
+    url: https://opensource.org/licenses/MIT
+  title: OCR API
+  version: "1.0"
+paths:
+  /api/ocr:
+    post:
+      consumes:
+      - multipart/form-data
+      description: OCR Service for the OCR Service
+      parameters:
+      - description: API Key
+        in: header
+        name: X-API-Key
+        required: true
+        type: string
+      - description: File
+        in: formData
+        name: file
+        required: true
+        type: file
+      - description: 'Cache Policy (options: cache_first, no_cache, cache_only)'
+        in: formData
+        name: cache_policy
+        required: true
+        type: string
+      - description: 'OCR Engine (options: TESSERACT, EASYOCR, DOCTR)'
+        in: formData
+        name: engine
+        required: true
+        type: string
+      - description: 'Raw (options: true, false)'
+        in: formData
+        name: raw
+        type: boolean
+      - description: Organization ID
+        in: formData
+        name: organization_id
+        required: true
+        type: string
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.OCRResponseList'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+        "500":
+          description: Internal Server Error
+          schema:
+            $ref: '#/definitions/utils.ErrorResponse'
+      summary: OCR Service
+      tags:
+      - OCR
+swagger: "2.0"

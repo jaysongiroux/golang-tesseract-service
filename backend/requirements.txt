@@ -1,0 +1,7 @@
+pillow
+opencv-python
+python-doctr
+"python-doctr[tf]"
+mplcursors
+easyocr
+pytesseract

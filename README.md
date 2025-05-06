@@ -1,17 +1,19 @@
-# Golang Tesseract OCR Service
+# Golang + Next.js full stack OCR Service
 
-A lightweight OCR (Optical Character Recognition) service built with Golang using Tesseract. This service is built for local development, supports JWT-based authentication, and comes with built-in Swagger documentation.
+A lightweight OCR (Optical Character Recognition) service built with Golang and Next.js using multiple OCR Engines.
 
 ## Features
-
 - ⚡️ Built with [Gin](https://github.com/gin-gonic/gin) for high-performance HTTP handling
 - 🔁 Live reloads during development via [Air](https://github.com/cosmtrek/air)
-- 🔍 OCR powered by [Tesseract](https://github.com/tesseract-ocr/tesseract)
+- 🔍 Multiple OCR Engines powered by [Tesseract](https://github.com/tesseract-ocr/tesseract), [EasyOCR](https://github.com/JaidedAI/EasyOCR), [DocTR](https://github.com/mindee/doctr)
 - 📘 Swagger UI for exploring and testing API routes
-- 🐳 Docker-based setup with Postgres and Tesseract pre-installed
-- 🧠 Database interactions using [GORM](https://gorm.io/)
+- 🐳 Docker-based setup with Postgres and OCR Engines pre-installed
 - 🔐 JWT Authentication (Access & Refresh Tokens) using email/password
 - 📀 OCR Result Caching using file content hashing
+- 🖥️ Next.JS for easy organization, metrics and access-control
+- 💰 Polar for Monetization + Metrics tracking
+- 🗃️ Prisma For Postgres ORM
+- 📧 [Resend](https://resend.com) for email communication
 
 ## Getting Started
 
@@ -43,7 +45,7 @@ docker-compose up --build
 This will spin up:
 - The Go service (with live reload via Air) pre-installed Tesseract runtime
 - Postgres database
-- pgadmin
+- pgadmin (Optional)
 
 ## 📚 Swagger Docs
 Once running, the API documentation will be available at:
@@ -84,7 +86,7 @@ docker build -f Dockerfile.prod -t tesseract-ocr-service:latest .
 docker run -d \
   --name tesseract-ocr-service \
   -p 8001:8001 \
-  -e DATABASE_URL='postgres://admin:password1!@192.168.1.97:5432/ocrDB' \
+  -e DATABASE_URL='postgres://admin:password@192.168.1.97:5432/ocrDB' \
   -e SECRET_KEY=your-secret-key \
   -e ENV=production \
   tesseract-ocr-service:latest
@@ -108,22 +110,11 @@ For setup instructions, see the [deployment guide](deployment-guide.md).
 
 ## Technical Docs
 
-### 🔐 Authentication
-This service uses JWT authentication. You'll need to:
+## 🛠️ Future Plans
+- Horizontal scaling configuration for high-load scenarios
 
-- Register/login using your email and password
-- Include the Authorization header with your access token when calling protected endpoints
-- Use the /auth/renew-token endpoint with a refresh token to obtain a new access token
-
-For access to the OCR service you will need to create an organization then gnerate an API key to include in your POST request as `X-API-Key` header. 
-
-Swagger will guide you through the available endpoints.
+## Wish List
+- S3/ R2 Support for cached blog storage
 
 ## 📄 License
 MIT
-
-## 🛠️ Future Plans
-- Organization role-based access control
-- Rate limiting / usage tracking
-- Monitoring and alerting integration
-- Horizontal scaling configuration for high-load scenarios

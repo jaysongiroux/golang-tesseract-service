@@ -53,25 +53,13 @@ jobs:
       - name: Build and push Docker image
         uses: docker/build-push-action@v4
         with:
-          context: .
-          file: ./Dockerfile.prod
+          context: ./backend
+          file: ./backend/Dockerfile.prod
           push: true
           tags: |
             ${{ env.REGISTRY }}/${{ secrets.DIGITALOCEAN_REGISTRY_NAME }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}
             
-      # - name: Deploy to Digital Ocean App Platform
-      #   if: ${{ secrets.DIGITALOCEAN_APP_ID != '' }}
-      #   run: |
-      #     doctl apps create-deployment ${{ secrets.DIGITALOCEAN_APP_ID }} --force-rebuild
-
-      # # Deploy to Digital Ocean Kubernetes (if using DO Kubernetes)
-      # - name: Deploy to Digital Ocean Kubernetes
-      #   if: ${{ secrets.DIGITALOCEAN_CLUSTER_ID != '' }}
-      #   run: |
-      #     doctl kubernetes cluster kubeconfig save ${{ secrets.DIGITALOCEAN_CLUSTER_ID }}
-      #     kubectl set image deployment/${{ env.IMAGE_NAME }} ${{ env.IMAGE_NAME }}=${{ env.REGISTRY }}/${{ secrets.DIGITALOCEAN_REGISTRY_NAME }}/${{ env.IMAGE_NAME }}:${{ steps.version.outputs.version }}
-          
-      # # Clean old images (optional)
-      # - name: Clean up old images
-      #   run: |
-      #     doctl registry repository list-tags ${{ secrets.DIGITALOCEAN_REGISTRY_NAME }}/${{ env.IMAGE_NAME }} --format ID --no-header | sort -r | tail -n +11 | xargs -r doctl registry repository delete-tag ${{ secrets.DIGITALOCEAN_REGISTRY_NAME }}/${{ env.IMAGE_NAME }} --force 
+      - name: Deploy to Digital Ocean App Platform
+        if: ${{ secrets.DIGITALOCEAN_APP_ID != '' }}
+        run: |
+          doctl apps create-deployment ${{ secrets.DIGITALOCEAN_APP_ID }} --force-rebuild

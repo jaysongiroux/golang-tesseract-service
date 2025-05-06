@@ -1,0 +1,201 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+// Looking for ways to speed up your queries, or scale easily with your serverless or edge functions?
+// Try Prisma Accelerate: https://pris.ly/cli/accelerate-init
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+model Account {
+  id                 String    @id @default(cuid())
+  userId             String
+  providerType       String
+  providerId         String
+  providerAccountId  String
+  refreshToken       String?
+  accessToken        String?
+  accessTokenExpires DateTime?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+  user               User      @relation(fields: [userId], references: [id])
+
+  @@unique([providerId, providerAccountId])
+  @@index([userId, providerId, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(cuid())
+  userId       String
+  expires      DateTime
+  sessionToken String   @unique
+  accessToken  String   @unique
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+  user         User     @relation(fields: [userId], references: [id])
+
+  @@index([userId, expires])
+}
+
+model User {
+  id                       String                     @id @default(cuid())
+  name                     String?
+  email                    String                     @unique
+  emailVerified            DateTime?
+  image                    String?
+  password                 String?
+  createdAt                DateTime                   @default(now())
+  updatedAt                DateTime                   @updatedAt
+  accounts                 Account[]
+  sessions                 Session[]
+  OrganizationMemberAPIKey OrganizationMemberAPIKey[]
+  OrganizationMember       OrganizationMember[]
+  OrganizationInvitation   OrganizationInvitation[]
+
+  @@index([id, email])
+}
+
+model VerificationRequest {
+  id         String   @id @default(cuid())
+  identifier String
+  token      String   @unique
+  expires    DateTime
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  @@unique([identifier, token])
+  @@index([identifier, token])
+}
+
+model Organization {
+  id                     BigInt                   @id @default(autoincrement())
+  name                   String
+  email                  String                   @unique
+  polarCustomerId        String?                  @unique
+  createdAt              DateTime                 @default(now())
+  updatedAt              DateTime                 @updatedAt
+  OrganizationFileCache  OrganizationFileCache[]
+  OrganizationOCRRequest OrganizationOCRRequest[]
+  OrganizationMember     OrganizationMember[]
+  OrganizationInvitation OrganizationInvitation[]
+
+  @@index([id, name, email])
+  @@map("organization")
+}
+
+model OrganizationInvitation {
+  id             String                          @id @default(cuid())
+  email          String
+  permissions    OrganizationMemberPermissions[]
+  organizationId BigInt
+  createdAt      DateTime                        @default(now())
+  updatedAt      DateTime                        @updatedAt
+  authorId       String
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  author       User         @relation(fields: [authorId], references: [id], onDelete: Cascade)
+
+  @@index([id])
+}
+
+model OrganizationMember {
+  userId                   String
+  organizationId           BigInt
+  permissions              OrganizationMemberPermissions[]
+  createdAt                DateTime                        @default(now())
+  updatedAt                DateTime                        @updatedAt
+  OrganizationMemberAPIKey OrganizationMemberAPIKey[]
+  accepted                 Boolean                         @default(false)
+
+  organization Organization @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  user         User         @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([userId, organizationId])
+  @@index([userId, organizationId])
+  @@map("organization_member")
+}
+
+model OrganizationMemberAPIKey {
+  id             String                          @id @default(cuid())
+  userId         String
+  organizationId BigInt
+  keyHash        String                          @unique
+  expiresAt      DateTime?
+  name           String
+  lastChars      String
+  createdAt      DateTime                        @default(now())
+  scope          OrganizationMemberAPIKeyScope[]
+
+  organizationMember OrganizationMember @relation(fields: [userId, organizationId], references: [userId, organizationId], onDelete: Cascade)
+  user               User               @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@index([keyHash, userId, organizationId])
+  @@map("organization_member_api_key")
+}
+
+model OrganizationFileCache {
+  organizationId         BigInt
+  hash                   String                   @id
+  createdAt              DateTime                 @default(now())
+  results                String
+  ocrEngine              OCREngine
+  raw                    Boolean                  @default(false)
+  organization           Organization             @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  OrganizationOCRRequest OrganizationOCRRequest[]
+
+  @@index([hash])
+  @@map("organization_file_cache")
+}
+
+model OrganizationOCRRequest {
+  id             BigInt    @id @default(autoincrement())
+  createdAt      DateTime  @default(now())
+  cacheHit       Boolean
+  numOfPages     BigInt
+  ocrEngine      OCREngine
+  organizationId BigInt
+  filename       String
+  success        Boolean   @default(true)
+  tokenCount     BigInt    @default(0)
+  cacheHash      String?
+  fileHash       String
+  raw            Boolean   @default(false)
+
+  organization Organization           @relation(fields: [organizationId], references: [id], onDelete: Cascade)
+  fileCache    OrganizationFileCache? @relation(fields: [cacheHash], references: [hash], onDelete: SetNull)
+
+  @@index([id])
+  @@map("organization_ocr_request")
+}
+
+enum OCREngine {
+  TESSERACT
+  EASYOCR
+  DOCTR
+}
+
+enum OrganizationMemberPermissions {
+  READ_ONLY_ORGANIZATION_MEMBERS
+  MANAGE_ORGANIZATION_MEMBERS
+
+  READ_ONLY_ORGANIZATION_SETTINGS
+  MANAGE_ORGANIZATION_SETTINGS
+
+  READ_ONLY_ORGANIZATION_BILLING
+  WRITE_ORGANIZATION_BILLING
+
+  CREATE_PERSONAL_API_KEYS
+
+  READ_ONLY_ORGANIZATION_FILES
+  MANAGE_ORGANIZATION_FILES
+}
+
+enum OrganizationMemberAPIKeyScope {
+  SERVICE_OCR
+}

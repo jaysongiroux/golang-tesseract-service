@@ -1,2 +1,4 @@
-tmp
-.env
+
+/notebooks/
+.vscode
+.DS_Store
