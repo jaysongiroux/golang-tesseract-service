@@ -1,7 +1,6 @@
 package cache
 
 import (
-	"log"
 	"serverless-tesseract/db"
 	"serverless-tesseract/utils"
 )
@@ -14,24 +13,17 @@ func GetCacheResult(
 	organizationId int64,
 	ocrEngine string,
 	raw bool,
-) (results string, cache_hit bool, err error) {
+) (results *utils.OCRResponseList, cache_hit bool, err error) {
 	// if cache policy is no cache, return nil
 	if cache_policy == utils.NoCache {
-		return "", false, nil
+		return nil, false, nil
 	}
 
 	// get the cache result from the database
-	cacheResult, err := db.GetFileHashCache(fileHash, organizationId, raw)
-	if err != nil {
-		log.Printf("Cache Service: Error getting cache result: %v", err)
-		return "", false, err
+	cacheResult, err := db.GetFileHashCache(fileHash, organizationId, raw, ocrEngine)
+	if err != nil || cacheResult == nil && cache_policy == utils.CacheOnly {
+		return nil, false, err
 	}
 
-	// if no results, return nil
-	if cacheResult == "" && cache_policy == utils.CacheOnly {
-		return "", false, nil
-	}
-
-	// else return results
 	return cacheResult, true, nil
 }

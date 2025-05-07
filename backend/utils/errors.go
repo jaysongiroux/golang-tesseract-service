@@ -3,7 +3,8 @@ package utils
 import "errors"
 
 var (
-	ErrTokenRequired = errors.New("token required")
-	ErrInvalidAPIKey = errors.New("invalid API key")
-	ErrAPIKeyExpired = errors.New("API key expired")
+	ErrTokenRequired    = errors.New("token required")
+	ErrInvalidAPIKey    = errors.New("invalid API key")
+	ErrAPIKeyExpired    = errors.New("API key expired")
+	ErrPermissionDenied = errors.New("permission denied")
 )

@@ -4,6 +4,7 @@ import json
 from PIL import Image
 import pytesseract
 from pytesseract import Output
+from utils.tools import compile_raw_response
 
 def main():
     # get page index from argument
@@ -48,44 +49,8 @@ def main():
                 })
             
     if raw:
-        # combine data into a single response
-        min_x = min([d['bbox']['topLeft']['x'] for d in data])
-        min_y = min([d['bbox']['topLeft']['y'] for d in data])
-        max_x = max([d['bbox']['bottomRight']['x'] for d in data])
-        max_y = max([d['bbox']['bottomRight']['y'] for d in data])
-        average_confidence = sum([d['confidence'] for d in data]) / len(data)
-        combined_data = {
-            "confidence": average_confidence,
-            "text": "",
-            "page_number": int(page_index),
-            "bbox": {
-                "topLeft": {
-                    "x": min_x,
-                    "y": min_y
-                },
-                "bottomRight": {
-                    "x": max_x,
-                    "y": max_y
-                },
-                "topRight": {
-                    "x": max_x,
-                    "y": min_y
-                },
-                "bottomLeft": {
-                    "x": min_x,
-                    "y": max_y
-                }
-            }
-        }
-        for d in data:
-            combined_data["text"] += " "+d['text']
-            
-        
-        print(json.dumps({
-            "engine": "TESSERACT",
-            "number_of_tokens": len(data),
-            "ocr_responses": [combined_data]
-        }))
+        combined_data = compile_raw_response(data, page_index, "TESSERACT")
+        print(json.dumps(combined_data))
         return
     
     # same as return since we are using a pipe

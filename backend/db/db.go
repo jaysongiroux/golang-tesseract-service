@@ -80,107 +80,29 @@ func CreateOCRRequest(
 	// optional
 	cache_hash_id *string,
 ) (models.OrganizationOCRRequest, error) {
-	// First check if a record with the same organizationId, fileHash, and ocrEngine exists
-	checkQuery := `
-		SELECT id FROM organization_ocr_request 
-		WHERE "organizationId" = $1 AND "fileHash" = $2 AND "ocrEngine" = $3 AND "raw" = $4
-		LIMIT 1
+	// insert into organization_ocr_request table
+	insertQuery := `
+		INSERT INTO organization_ocr_request (
+			"createdAt", 
+			"cacheHit", 
+			"numOfPages", 
+			"ocrEngine", 
+			"organizationId",
+			"filename",
+			"success",
+			"tokenCount",
+			"fileHash",
+			"cacheFileHash",
+			"raw"
+		) 
+		VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
+		RETURNING id
 	`
 
-	var existingId int64
-	err := DB.QueryRow(checkQuery, organizationId, file_hash, string(ocr_engine), raw).Scan(&existingId)
-
 	var id int64
-	if err == nil {
-		// Record exists, update it
-		updateQuery := `
-			UPDATE organization_ocr_request SET
-				"createdAt" = $1,
-				"cacheHit" = $2,
-				"numOfPages" = $3,
-				"success" = $4,
-				"tokenCount" = $5,
-				"cacheHash" = $6,
-				"raw" = $7
-			WHERE id = $8
-			RETURNING id
-		`
-		err = DB.QueryRow(
-			updateQuery,
-			time.Now(),
-			cache_hit,
-			num_of_pages,
-			success,
-			token_count,
-			cache_hash_id,
-			raw,
-			existingId,
-		).Scan(&id)
-
-		if err != nil {
-			return models.OrganizationOCRRequest{}, fmt.Errorf("failed to update OCR request: %w", err)
-		}
-	} else if err == sql.ErrNoRows {
-		// Record doesn't exist, insert a new one
-		insertQuery := `
-			INSERT INTO organization_ocr_request (
-				"createdAt", 
-				"cacheHit", 
-				"numOfPages", 
-				"ocrEngine", 
-				"organizationId",
-				"filename",
-				"success",
-				"tokenCount",
-				"fileHash",
-				"cacheHash",
-				"raw"
-			) 
-			VALUES ($1, $2, $3, $4, $5, $6, $7, $8, $9, $10, $11)
-			RETURNING id
-		`
-
-		err = DB.QueryRow(
-			insertQuery,
-			time.Now(),
-			cache_hit,
-			num_of_pages,
-			string(ocr_engine),
-			organizationId,
-			filename,
-			success,
-			token_count,
-			file_hash,
-			cache_hash_id,
-			raw,
-		).Scan(&id)
-
-		if err != nil {
-			return models.OrganizationOCRRequest{}, fmt.Errorf("failed to create OCR request: %w", err)
-		}
-	} else {
-		// Some other error occurred
-		return models.OrganizationOCRRequest{}, fmt.Errorf("failed to check for existing OCR request: %w", err)
-	}
-
-	cache_hash_id_or_nil := ""
-	if cache_hash_id != nil {
-		cache_hash_id_or_nil = *cache_hash_id
-	}
-
-	request := models.OrganizationOCRRequest{
-		ID:             id,
-		CreatedAt:      time.Now(),
-		CacheHit:       cache_hit,
-		NumOfPages:     num_of_pages,
-		OCREngine:      utils.OCREngineType(ocr_engine),
-		OrganizationID: organizationId,
-		Filename:       filename,
-		Success:        success,
-		TokenCount:     token_count,
-		FileHash:       file_hash,
-		CacheHash:      cache_hash_id_or_nil,
-		Raw:            raw,
+	err := DB.QueryRow(insertQuery, time.Now(), cache_hit, num_of_pages, ocr_engine, organizationId, filename, success, token_count, file_hash, cache_hash_id, raw).Scan(&id)
+	if err != nil {
+		return models.OrganizationOCRRequest{}, fmt.Errorf("failed to insert into organization_ocr_request: %w", err)
 	}
 
 	// if success is true, increment the ocr meter
@@ -193,7 +115,25 @@ func CreateOCRRequest(
 		polar.IngestMeter(c, polarCustomerId, num_of_pages)
 	}
 
-	return request, nil
+	cache_hash_id_or_nil := ""
+	if cache_hash_id != nil {
+		cache_hash_id_or_nil = *cache_hash_id
+	}
+
+	return models.OrganizationOCRRequest{
+		ID:             id,
+		CreatedAt:      time.Now(),
+		CacheHit:       cache_hit,
+		NumOfPages:     num_of_pages,
+		OCREngine:      utils.OCREngineType(ocr_engine),
+		OrganizationID: organizationId,
+		Filename:       filename,
+		Success:        success,
+		TokenCount:     token_count,
+		FileHash:       file_hash,
+		CacheHash:      cache_hash_id_or_nil,
+		Raw:            raw,
+	}, nil
 }
 
 func GetOrganization(organizationId int64) (models.Organization, error) {
@@ -215,25 +155,35 @@ func GetOrganization(organizationId int64) (models.Organization, error) {
 	return organization, nil
 }
 
-func GetFileHashCache(hash string, organizationId int64, raw bool) (string, error) {
+func GetFileHashCache(hash string, organizationId int64, raw bool, engine string) (results *utils.OCRResponseList, err error) {
+	// find unique cache result based off raw, organizationId, and hash
 	query := `
-		SELECT results
+		SELECT results, "ocrEngine", raw
 		FROM organization_file_cache 
-		WHERE hash = $1 AND "organizationId" = $2 AND "raw" = $3
+		WHERE hash = $1 AND "organizationId" = $2 AND raw = $3 AND "ocrEngine" = $4
 		ORDER BY "createdAt" DESC
 		LIMIT 1
 	`
 
-	var results string
-	err := DB.QueryRow(query, hash, organizationId, raw).Scan(&results)
+	var resultsJSON []byte
+	var ocrEngine string
+	var rawValue bool
+
+	err = DB.QueryRow(query, hash, organizationId, raw, engine).Scan(&resultsJSON, &ocrEngine, &rawValue)
 	if err != nil {
 		if err == sql.ErrNoRows {
-			return "", nil // No cache found
+			return nil, nil
 		}
-		return "", fmt.Errorf("error querying cache: %w", err)
+		return nil, fmt.Errorf("failed to get file hash cache: %w", err)
 	}
 
-	return results, nil
+	var ocrResponseList utils.OCRResponseList
+	err = json.Unmarshal(resultsJSON, &ocrResponseList)
+	if err != nil {
+		return nil, fmt.Errorf("failed to unmarshal results: %w", err)
+	}
+
+	return &ocrResponseList, nil
 }
 
 func GetOrganizationPolarCustomerId(organizationId int64) (string, error) {
@@ -283,21 +233,29 @@ func UpdateOrganizationPolarCustomerId(organizationId int64, polarCustomerId str
 	return nil
 }
 
-func SaveFileHashCache(hash string, results utils.OCRResponseList, organizationId int64, engine string) error {
+func SaveFileHashCache(
+	hash string,
+	results utils.OCRResponseList,
+	organizationId int64,
+	engine string,
+	raw bool,
+) error {
 	query := `
 		INSERT INTO organization_file_cache (
 			hash, 
 			results, 
 			"createdAt", 
 			"ocrEngine",
-			"organizationId"
-		) 
-		VALUES ($1, $2, $3, $4, $5)
-		ON CONFLICT (hash) 
-		DO UPDATE SET 
+			"organizationId",
+			"raw"
+		)
+		VALUES ($1, $2, $3, $4, $5, $6)
+		ON CONFLICT (hash, "organizationId", raw, "ocrEngine")
+		DO UPDATE SET
 			results = $2,
 			"createdAt" = $3,
-			"ocrEngine" = $4
+			"ocrEngine" = $4,
+			"raw" = $6
 	`
 
 	resultsBytes, err := json.Marshal(results)
@@ -305,15 +263,7 @@ func SaveFileHashCache(hash string, results utils.OCRResponseList, organizationI
 		return fmt.Errorf("failed to marshal results: %w", err)
 	}
 
-	_, err = DB.Exec(
-		query,
-		hash,
-		string(resultsBytes),
-		time.Now(),
-		engine,
-		organizationId,
-	)
-
+	_, err = DB.Exec(query, hash, string(resultsBytes), time.Now(), engine, organizationId, raw)
 	if err != nil {
 		return fmt.Errorf("failed to save file hash cache: %w", err)
 	}

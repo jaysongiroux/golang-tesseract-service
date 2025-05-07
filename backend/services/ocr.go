@@ -30,12 +30,11 @@ func tesseractOCR(imageBytes []byte, pageNumber int, raw bool) (utils.OCRRespons
 }
 
 func easyOCR(imageBytes []byte, pageNumber int, raw bool) (utils.OCRResponseList, error) {
-	// args := []string{strconv.Itoa(pageNumber)}
-	// if raw {
-	// 	args = append(args, "raw")
-	// }
-	// return externalscripts.ExecutePythonOCREngineScript("easyocr.py", imageBytes, args...)
-	return utils.OCRResponseList{}, fmt.Errorf("easyocr not implemented")
+	args := []string{strconv.Itoa(pageNumber)}
+	if raw {
+		args = append(args, "raw")
+	}
+	return externalscripts.ExecutePythonOCREngineScript("easy.py", imageBytes, args...)
 }
 
 func doctrOCR(imageBytes []byte, pageNumber int, raw bool) (utils.OCRResponseList, error) {

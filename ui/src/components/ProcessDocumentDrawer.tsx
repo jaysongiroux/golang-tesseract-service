@@ -13,7 +13,7 @@ import {
   SelectTrigger,
   SelectValue,
 } from "@/components/ui/select";
-import { File, Loader2, Trash } from "lucide-react";
+import { File, FileText, Loader2, Trash } from "lucide-react";
 import Dropzone from "shadcn-dropzone";
 import { Card, CardContent, CardTitle } from "./ui/card";
 import { CodeBlock } from "./code-block";
@@ -27,19 +27,12 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
+  DialogTrigger,
 } from "./ui/dialog";
 import { cn } from "@/lib/utils";
 import { OCRResponseList } from "@/lib/types";
 
-interface ProcessDocumentDrawerProps {
-  open: boolean;
-  onClose: () => void;
-}
-
-export function ProcessDocumentDrawer({
-  open,
-  onClose,
-}: ProcessDocumentDrawerProps) {
+export function ProcessDocumentDrawer({}) {
   const { selectedOrg } = useUser();
   const [file, setFile] = useState<File | null>(null);
   const [outputType, setOutputType] = useState("raw");
@@ -48,6 +41,8 @@ export function ProcessDocumentDrawer({
   const [error, setError] = useState("");
   const [results, setResults] = useState("");
   const [engine, setEngine] = useState<OCREngine>(OCREngine.TESSERACT);
+  const [processDocumentDrawerOpen, setProcessDocumentDrawerOpen] =
+    useState(false);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -129,7 +124,6 @@ export function ProcessDocumentDrawer({
     setOutputType("raw");
     setCachePolicy("cache_first");
     setResults("");
-    onClose();
   };
 
   const fileSizeInMBKb = (file: File) => {
@@ -141,7 +135,22 @@ export function ProcessDocumentDrawer({
   };
 
   return (
-    <Dialog open={open} onOpenChange={handleClose}>
+    <Dialog
+      open={processDocumentDrawerOpen}
+      onOpenChange={setProcessDocumentDrawerOpen}
+    >
+      <div className="flex items-center gap-2">
+        <Button
+          onClick={() => {
+            setProcessDocumentDrawerOpen(true);
+          }}
+          className="text-slate-50 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
+        >
+          <FileText className="mr-2 h-4 w-4 text-slate-50" />
+          Process Document
+        </Button>
+      </div>
+
       <DialogContent className="min-w-[90%] w-full h-[90%] max-h-[90%] flex flex-col">
         <DialogHeader className="p-0 m-0 mb-0 py-0 pb-0">
           <div className="flex items-center justify-between gap-4">

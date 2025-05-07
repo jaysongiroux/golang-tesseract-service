@@ -12,6 +12,7 @@ import (
 	"serverless-tesseract/services"
 	"serverless-tesseract/services/cache"
 	"serverless-tesseract/utils"
+	"strconv"
 	"strings"
 
 	"github.com/gin-gonic/gin"
@@ -26,12 +27,13 @@ import (
 //
 // @Param 			X-API-Key 		header 		string 	true 	"API Key"
 // @Param			file			formData	file				true	"File"
-// @Param			cache_policy	formData	string	true	"Cache Policy (options: cache_first, no_cache, cache_only)"
-// @Param			engine			formData	string	true	"OCR Engine (options: TESSERACT, EASYOCR, DOCTR)"
+// @Param			cache_policy	formData	string	false	"Cache Policy (options: cache_first, no_cache, cache_only)"
+// @Param			engine			formData	string	false	"OCR Engine (options: TESSERACT, EASYOCR, DOCTR)"
 // @Param			raw				formData	bool	false	"Raw (options: true, false)"
 // @Param			organization_id	formData	string	true	"Organization ID"
 // @Success		200			{object}	utils.OCRResponseList
 // @Failure		400			{object}	utils.ErrorResponse
+// @Failure		403			{object}	utils.ErrPermissionDeniedResponse
 // @Failure		500			{object}	utils.ErrorResponse
 // @Router			/api/ocr [post]
 func OCRService2(c *gin.Context) {
@@ -43,7 +45,7 @@ func OCRService2(c *gin.Context) {
 	}
 
 	if file.Size > int64(utils.FILE_SIZE_LIMIT) {
-		c.JSON(http.StatusBadRequest, utils.ErrorResponse{Error: "File size exceeds limit"})
+		c.JSON(http.StatusBadRequest, utils.ErrorResponse{Error: "File size exceeds limit: " + strconv.Itoa(utils.FILE_SIZE_LIMIT) + " bytes"})
 		return
 	}
 
@@ -95,7 +97,7 @@ func OCRService2(c *gin.Context) {
 	// check the token's scopes
 	scopes := c.GetStringSlice("authed_scopes")
 	if !utils.Contains(scopes, "SERVICE_OCR") {
-		c.JSON(http.StatusForbidden, utils.ErrorResponse{Error: "Permission Denied"})
+		c.JSON(http.StatusForbidden, utils.ErrPermissionDeniedResponse{Error: utils.ErrPermissionDenied.Error()})
 		return
 	}
 
@@ -129,7 +131,7 @@ func OCRService2(c *gin.Context) {
 	}
 
 	if !canUseOCR {
-		c.JSON(http.StatusForbidden, utils.ErrorResponse{Error: "Permission Denied"})
+		c.JSON(http.StatusForbidden, utils.ErrPermissionDeniedResponse{Error: utils.ErrPermissionDenied.Error()})
 		return
 	}
 
@@ -151,8 +153,8 @@ func OCRService2(c *gin.Context) {
 	}
 
 	// if the cache_policy is cache_only, return the results
-	if cache_policy == string(utils.CacheOnly) {
-		if results == "" {
+	if cache_policy == string(utils.CacheOnly) || (cache_hit && cache_policy == string(utils.CacheFirst)) {
+		if results == nil {
 			success := false
 			num_of_pages := int32(1)
 			_, err = db.CreateOCRRequest(
@@ -175,7 +177,7 @@ func OCRService2(c *gin.Context) {
 			c.JSON(http.StatusNotFound, utils.ErrorResponse{Error: "No cache results found"})
 			return
 		}
-		token_count := utils.CountTokens(results)
+		token_count := results.NumberOfTokens
 		num_of_pages := int32(1)
 		_, err = db.CreateOCRRequest(
 			c,
@@ -194,7 +196,10 @@ func OCRService2(c *gin.Context) {
 			c.JSON(http.StatusInternalServerError, utils.ErrorResponse{Error: fmt.Sprintf("Failed to record OCR request: %v", err)})
 			return
 		}
-		c.JSON(http.StatusOK, utils.OCRResponse{Text: results})
+		results.Cached = cache_hit
+		results.Raw = raw == "true"
+		results.Engine = utils.OCREngineType(engine)
+		c.JSON(http.StatusOK, results)
 		return
 	}
 
@@ -252,6 +257,8 @@ func OCRService2(c *gin.Context) {
 				return
 			}
 			allResults.OCRResponses = append(allResults.OCRResponses, pageResults.OCRResponses...)
+			allResults.Raw = raw == "true"
+			allResults.Cached = cache_hit
 			number_of_pages = int32(i + 1)
 			number_of_tokens += pageResults.NumberOfTokens
 		}
@@ -261,6 +268,7 @@ func OCRService2(c *gin.Context) {
 			allResults,
 			organizationID,
 			engine,
+			raw == "true",
 		)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, utils.ErrorResponse{Error: fmt.Sprintf("Failed to save cache result: %v", err)})
@@ -297,6 +305,7 @@ func OCRService2(c *gin.Context) {
 			allResults,
 			organizationID,
 			engine,
+			raw == "true",
 		)
 		if err != nil {
 			db.CreateOCRRequest(
@@ -341,5 +350,8 @@ func OCRService2(c *gin.Context) {
 		return
 	}
 
+	allResults.Cached = cache_hit
+	allResults.Raw = raw == "true"
+	allResults.Engine = utils.OCREngineType(engine)
 	c.JSON(http.StatusOK, allResults)
 }

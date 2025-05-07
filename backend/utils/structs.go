@@ -4,6 +4,10 @@ type ErrorResponse struct {
 	Error string `json:"error" example:"Error message"`
 }
 
+type ErrPermissionDeniedResponse struct {
+	Error string `json:"error" example:"Permission denied"`
+}
+
 // CACHE POLICY
 type CachePolicy struct {
 	CacheFirst string `json:"cache_first" example:"cache_first"`
@@ -51,6 +55,8 @@ type OCRResponseList struct {
 	OCRResponses   []OCRResponse `json:"ocr_responses"`
 	Engine         OCREngineType `json:"engine"`
 	NumberOfTokens int64         `json:"number_of_tokens" example:"100"`
+	Raw            bool          `json:"raw" example:"true"`
+	Cached         bool          `json:"cached" example:"true"`
 }
 
 type OCRResponse struct {

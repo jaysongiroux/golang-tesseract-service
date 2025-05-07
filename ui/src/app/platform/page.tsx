@@ -1,6 +1,5 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { DashboardLayout } from "@/components/DashboardLayout";
@@ -42,9 +41,6 @@ export default function PlatformPage() {
   } = usePolar();
 
   const combinedLoading = metersLoading || isLoading || productsLoading;
-
-  const [processDocumentDrawerOpen, setProcessDocumentDrawerOpen] =
-    useState(false);
 
   const maxValue = Math.max(
     ...(usageData?.totalUsage || []).map((item) => item.count)
@@ -104,19 +100,7 @@ export default function PlatformPage() {
           </div>
           {selectedOrg?.groupMember?.permissions?.includes(
             OrganizationMemberPermissions.CREATE_PERSONAL_API_KEYS
-          ) && (
-            <div className="flex items-center gap-2">
-              <Button
-                onClick={() => {
-                  setProcessDocumentDrawerOpen(true);
-                }}
-                className="text-slate-50 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700"
-              >
-                <FileText className="mr-2 h-4 w-4 text-slate-50" />
-                Process Document
-              </Button>
-            </div>
-          )}
+          ) && <ProcessDocumentDrawer />}
         </div>
 
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-4">
@@ -475,10 +459,6 @@ export default function PlatformPage() {
           </div>
         </div>
       </DashboardLayout>
-      <ProcessDocumentDrawer
-        open={processDocumentDrawerOpen}
-        onClose={() => setProcessDocumentDrawerOpen(false)}
-      />
     </>
   );
 }

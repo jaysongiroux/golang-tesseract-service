@@ -141,7 +141,7 @@ model OrganizationMemberAPIKey {
 
 model OrganizationFileCache {
   organizationId         BigInt
-  hash                   String                   @id
+  hash                   String
   createdAt              DateTime                 @default(now())
   results                String
   ocrEngine              OCREngine
@@ -149,6 +149,7 @@ model OrganizationFileCache {
   organization           Organization             @relation(fields: [organizationId], references: [id], onDelete: Cascade)
   OrganizationOCRRequest OrganizationOCRRequest[]
 
+  @@id([organizationId, hash, raw, ocrEngine])
   @@index([hash])
   @@map("organization_file_cache")
 }
@@ -163,12 +164,12 @@ model OrganizationOCRRequest {
   filename       String
   success        Boolean   @default(true)
   tokenCount     BigInt    @default(0)
-  cacheHash      String?
   fileHash       String
+  cacheFileHash  String?
   raw            Boolean   @default(false)
 
   organization Organization           @relation(fields: [organizationId], references: [id], onDelete: Cascade)
-  fileCache    OrganizationFileCache? @relation(fields: [cacheHash], references: [hash], onDelete: SetNull)
+  fileCache    OrganizationFileCache? @relation(fields: [cacheFileHash, organizationId, raw, ocrEngine], references: [hash, organizationId, raw, ocrEngine])
 
   @@index([id])
   @@map("organization_ocr_request")

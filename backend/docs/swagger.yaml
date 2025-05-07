@@ -11,6 +11,12 @@ definitions:
       topRight:
         $ref: '#/definitions/utils.XY'
     type: object
+  utils.ErrPermissionDeniedResponse:
+    properties:
+      error:
+        example: Permission denied
+        type: string
+    type: object
   utils.ErrorResponse:
     properties:
       error:
@@ -43,6 +49,9 @@ definitions:
     type: object
   utils.OCRResponseList:
     properties:
+      cached:
+        example: true
+        type: boolean
       engine:
         $ref: '#/definitions/utils.OCREngineType'
       number_of_tokens:
@@ -52,6 +61,9 @@ definitions:
         items:
           $ref: '#/definitions/utils.OCRResponse'
         type: array
+      raw:
+        example: true
+        type: boolean
     type: object
   utils.XY:
     properties:
@@ -91,12 +103,10 @@ paths:
       - description: 'Cache Policy (options: cache_first, no_cache, cache_only)'
         in: formData
         name: cache_policy
-        required: true
         type: string
       - description: 'OCR Engine (options: TESSERACT, EASYOCR, DOCTR)'
         in: formData
         name: engine
-        required: true
         type: string
       - description: 'Raw (options: true, false)'
         in: formData
@@ -116,6 +126,10 @@ paths:
           description: Bad Request
           schema:
             $ref: '#/definitions/utils.ErrorResponse'
+        "403":
+          description: Forbidden
+          schema:
+            $ref: '#/definitions/utils.ErrPermissionDeniedResponse'
         "500":
           description: Internal Server Error
           schema:

@@ -1,2 +1,4 @@
 tmp
 .env
+*.pyc
+*__pycache__

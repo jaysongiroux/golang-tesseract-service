@@ -48,15 +48,13 @@ const docTemplate = `{
                         "type": "string",
                         "description": "Cache Policy (options: cache_first, no_cache, cache_only)",
                         "name": "cache_policy",
-                        "in": "formData",
-                        "required": true
+                        "in": "formData"
                     },
                     {
                         "type": "string",
                         "description": "OCR Engine (options: TESSERACT, EASYOCR, DOCTR)",
                         "name": "engine",
-                        "in": "formData",
-                        "required": true
+                        "in": "formData"
                     },
                     {
                         "type": "boolean",
@@ -85,6 +83,12 @@ const docTemplate = `{
                             "$ref": "#/definitions/utils.ErrorResponse"
                         }
                     },
+                    "403": {
+                        "description": "Forbidden",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ErrPermissionDeniedResponse"
+                        }
+                    },
                     "500": {
                         "description": "Internal Server Error",
                         "schema": {
@@ -110,6 +114,15 @@ const docTemplate = `{
                 },
                 "topRight": {
                     "$ref": "#/definitions/utils.XY"
+                }
+            }
+        },
+        "utils.ErrPermissionDeniedResponse": {
+            "type": "object",
+            "properties": {
+                "error": {
+                    "type": "string",
+                    "example": "Permission denied"
                 }
             }
         },
@@ -158,6 +171,10 @@ const docTemplate = `{
         "utils.OCRResponseList": {
             "type": "object",
             "properties": {
+                "cached": {
+                    "type": "boolean",
+                    "example": true
+                },
                 "engine": {
                     "$ref": "#/definitions/utils.OCREngineType"
                 },
@@ -170,6 +187,10 @@ const docTemplate = `{
                     "items": {
                         "$ref": "#/definitions/utils.OCRResponse"
                     }
+                },
+                "raw": {
+                    "type": "boolean",
+                    "example": true
                 }
             }
         },

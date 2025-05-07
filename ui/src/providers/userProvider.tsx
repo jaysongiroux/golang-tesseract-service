@@ -12,6 +12,8 @@ import { ExtendedUser } from "@/lib/types";
 import { OrganizationsResponse } from "@/app/api/protected/organizations/types";
 import { OrganizationMemberAPIKeysResponse } from "@/app/api/protected/organization/tokens/types";
 import { UsageResponse } from "@/app/api/protected/usage/types";
+import { useRouter } from "next/navigation";
+import { Session } from "next-auth";
 
 type ExtendedOrganization = OrganizationsResponse[number];
 
@@ -32,7 +34,23 @@ interface UserContextType {
 const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
-  const { data: session } = useSession();
+  const router = useRouter();
+  const [sessionUser, setSessionUser] = useState<Session["user"] | null>(null);
+
+  const { data: session } = useSession({
+    required: true,
+    onUnauthenticated: () => {
+      setSessionUser(null);
+      router.push("/");
+    },
+  });
+
+  useEffect(() => {
+    if (JSON.stringify(sessionUser) !== JSON.stringify(session?.user)) {
+      setSessionUser(session?.user);
+    }
+  }, [sessionUser, session?.user]);
+
   const [organizations, setOrganizations] = useState<ExtendedOrganization[]>(
     []
   );
@@ -46,17 +64,10 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const [error, setError] = useState<string | null>(null);
   const [usageData, setUsageData] = useState<UsageResponse | null>(null);
 
-  // sync the selected org in local storage
-  useEffect(() => {
-    if (selectedOrg) {
-      localStorage.setItem("selectedOrg", selectedOrg.id);
-    }
-  }, [selectedOrg]);
-
   // Function to fetch organizations
   const fetchOrganizations = async () => {
     // Only fetch if user is logged in
-    if (!session?.user) {
+    if (!sessionUser) {
       setIsLoading(false);
       return;
     }
@@ -104,7 +115,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
 
   // Function to fetch API tokens
   const fetchAPITokens = useCallback(async () => {
-    if (!session?.user || !selectedOrg) {
+    if (!sessionUser || !selectedOrg) {
       return;
     }
 
@@ -132,7 +143,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     } finally {
       setIsLoading(false);
     }
-  }, [selectedOrg, session?.user]);
+  }, [selectedOrg, sessionUser]);
 
   const refreshUsageData = useCallback(async () => {
     if (!selectedOrg) {
@@ -152,13 +163,20 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     return await fetchAPITokens();
   }, [fetchAPITokens]);
 
+  // sync the selected org in local storage
+  useEffect(() => {
+    if (selectedOrg) {
+      localStorage.setItem("selectedOrg", selectedOrg.id);
+    }
+  }, [selectedOrg]);
+
   // Fetch organizations when session changes
   useEffect(() => {
-    if (session?.user?.id) {
+    if (sessionUser?.id) {
       fetchOrganizations();
     }
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [session?.user?.id]);
+  }, [sessionUser?.id]);
 
   // Fetch tokens when selected organization changes
   useEffect(() => {
@@ -167,7 +185,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     } else {
       setTokens([]);
     }
-  }, [selectedOrg, fetchAPITokens]);
+  }, [fetchAPITokens, selectedOrg]);
 
   useEffect(() => {
     refreshUsageData();
@@ -179,7 +197,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
     setSelectedOrg,
     isLoading,
     error,
-    sessionUser: session?.user as ExtendedUser | undefined,
+    sessionUser: sessionUser as ExtendedUser | undefined,
     tokens,
     refreshOrganizations: fetchOrganizations,
     refreshTokens,

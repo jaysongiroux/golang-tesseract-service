@@ -62,9 +62,12 @@ func ValidateAndParseAPIKey(jwtToken string) (userId *string, orgId *int64, scop
 	}
 
 	// 4. check expiration
-	expiration := int64(token.Claims.(jwt.MapClaims)["exp"].(float64))
-	if expiration < time.Now().Unix() {
-		return nil, nil, nil, false, errors.New("token expired")
+	expirationClaim, expirationExists := token.Claims.(jwt.MapClaims)["exp"]
+	if expirationExists {
+		expiration := int64(expirationClaim.(float64))
+		if expiration < time.Now().Unix() {
+			return nil, nil, nil, false, errors.New("token expired")
+		}
 	}
 
 	// 5. return the user id and the organization id
