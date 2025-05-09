@@ -227,7 +227,9 @@ func OCRService2(c *gin.Context) {
 				nil,
 			)
 			if err != nil {
-				log.Printf("Failed to create OCR request: %v", err)
+				log.Printf("Failed to process PDF: %v", err)
+				c.JSON(http.StatusInternalServerError, utils.ErrorResponse{Error: fmt.Sprintf("Failed to process PDF: %v", err)})
+				return
 			}
 			c.JSON(http.StatusInternalServerError, utils.ErrorResponse{Error: fmt.Sprintf("Failed to process PDF: %v", err)})
 			return
@@ -252,6 +254,8 @@ func OCRService2(c *gin.Context) {
 				)
 				if err != nil {
 					log.Printf("Failed to create OCR request: %v", err)
+					c.JSON(http.StatusInternalServerError, utils.ErrorResponse{Error: fmt.Sprintf("Failed to OCR page %d: %v", i+1, err)})
+					return
 				}
 				c.JSON(http.StatusInternalServerError, utils.ErrorResponse{Error: fmt.Sprintf("Failed to OCR page %d: %v", i+1, err)})
 				return
@@ -259,6 +263,8 @@ func OCRService2(c *gin.Context) {
 			allResults.OCRResponses = append(allResults.OCRResponses, pageResults.OCRResponses...)
 			allResults.Raw = raw == "true"
 			allResults.Cached = cache_hit
+			allResults.Engine = utils.OCREngineType(engine)
+			allResults.NumberOfTokens = pageResults.NumberOfTokens + allResults.NumberOfTokens
 			number_of_pages = int32(i + 1)
 			number_of_tokens += pageResults.NumberOfTokens
 		}
@@ -299,6 +305,10 @@ func OCRService2(c *gin.Context) {
 			return
 		}
 		allResults.OCRResponses = append(allResults.OCRResponses, pageResults.OCRResponses...)
+		allResults.Engine = utils.OCREngineType(engine)
+		allResults.NumberOfTokens = pageResults.NumberOfTokens
+		allResults.Raw = raw == "true"
+		allResults.Cached = cache_hit
 		number_of_tokens = pageResults.NumberOfTokens
 		err = db.SaveFileHashCache(
 			fileHash,
