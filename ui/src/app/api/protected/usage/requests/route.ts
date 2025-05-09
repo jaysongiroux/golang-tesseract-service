@@ -1,8 +1,14 @@
 import { withProtectedRoute } from "@/lib/auth-middleware";
 import { prisma } from "@/lib/prisma";
-import { OrganizationMemberPermissions } from "@prisma/client";
+import {
+  OrganizationFileCache,
+  OrganizationMemberPermissions,
+  OrganizationOCRRequest,
+} from "@prisma/client";
 import { Session } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
+import { GetObjectCommand } from "@aws-sdk/client-s3";
+import { R2 } from "@/utils/r2";
 
 const handler = async (req: NextRequest, session: Session) => {
   if (!session.user?.id) {
@@ -50,7 +56,7 @@ const handler = async (req: NextRequest, session: Session) => {
     );
   }
 
-  const requests = await prisma.organizationOCRRequest.findMany({
+  const requests = (await prisma.organizationOCRRequest.findMany({
     where: {
       organizationId: parseInt(organizationId),
     },
@@ -62,7 +68,9 @@ const handler = async (req: NextRequest, session: Session) => {
     },
     skip: parseInt(offset),
     take: parseInt(limit),
-  });
+  })) as (OrganizationOCRRequest & {
+    fileCache: OrganizationFileCache & { results: unknown };
+  })[];
 
   for (const request of requests) {
     request.id = request.id.toString() as unknown as bigint;
@@ -73,6 +81,15 @@ const handler = async (req: NextRequest, session: Session) => {
     ) as unknown as bigint;
 
     if (request.fileCache) {
+      const command = new GetObjectCommand({
+        Bucket: process.env.R2_BUCKET_NAME,
+        Key: request.fileCache.documentKey,
+      });
+      const response = await R2.send(command);
+      const body = await response.Body?.transformToString();
+      if (body) {
+        request.fileCache.results = JSON.parse(body);
+      }
       request.fileCache.organizationId = parseInt(
         organizationId
       ) as unknown as bigint;

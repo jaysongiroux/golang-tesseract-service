@@ -1,5 +1,5 @@
 -- CreateEnum
-CREATE TYPE "OCREngine" AS ENUM ('TESSERACT');
+CREATE TYPE "OCREngine" AS ENUM ('TESSERACT', 'EASYOCR', 'DOCTR');
 
 -- CreateEnum
 CREATE TYPE "OrganizationMemberPermissions" AS ENUM ('READ_ONLY_ORGANIZATION_MEMBERS', 'MANAGE_ORGANIZATION_MEMBERS', 'READ_ONLY_ORGANIZATION_SETTINGS', 'MANAGE_ORGANIZATION_SETTINGS', 'READ_ONLY_ORGANIZATION_BILLING', 'WRITE_ORGANIZATION_BILLING', 'CREATE_PERSONAL_API_KEYS', 'READ_ONLY_ORGANIZATION_FILES', 'MANAGE_ORGANIZATION_FILES');
@@ -119,10 +119,11 @@ CREATE TABLE "organization_file_cache" (
     "organizationId" BIGINT NOT NULL,
     "hash" TEXT NOT NULL,
     "createdAt" TIMESTAMP(3) NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    "results" TEXT NOT NULL,
+    "documentKey" TEXT NOT NULL,
     "ocrEngine" "OCREngine" NOT NULL,
+    "raw" BOOLEAN NOT NULL DEFAULT false,
 
-    CONSTRAINT "organization_file_cache_pkey" PRIMARY KEY ("hash")
+    CONSTRAINT "organization_file_cache_pkey" PRIMARY KEY ("organizationId","hash","raw","ocrEngine")
 );
 
 -- CreateTable
@@ -136,6 +137,9 @@ CREATE TABLE "organization_ocr_request" (
     "filename" TEXT NOT NULL,
     "success" BOOLEAN NOT NULL DEFAULT true,
     "tokenCount" BIGINT NOT NULL DEFAULT 0,
+    "fileHash" TEXT NOT NULL,
+    "cacheFileHash" TEXT,
+    "raw" BOOLEAN NOT NULL DEFAULT false,
 
     CONSTRAINT "organization_ocr_request_pkey" PRIMARY KEY ("id")
 );
@@ -172,6 +176,9 @@ CREATE UNIQUE INDEX "VerificationRequest_identifier_token_key" ON "VerificationR
 
 -- CreateIndex
 CREATE UNIQUE INDEX "organization_email_key" ON "organization"("email");
+
+-- CreateIndex
+CREATE UNIQUE INDEX "organization_polarCustomerId_key" ON "organization"("polarCustomerId");
 
 -- CreateIndex
 CREATE INDEX "organization_id_name_email_idx" ON "organization"("id", "name", "email");
@@ -223,3 +230,6 @@ ALTER TABLE "organization_file_cache" ADD CONSTRAINT "organization_file_cache_or
 
 -- AddForeignKey
 ALTER TABLE "organization_ocr_request" ADD CONSTRAINT "organization_ocr_request_organizationId_fkey" FOREIGN KEY ("organizationId") REFERENCES "organization"("id") ON DELETE CASCADE ON UPDATE CASCADE;
+
+-- AddForeignKey
+ALTER TABLE "organization_ocr_request" ADD CONSTRAINT "organization_ocr_request_cacheFileHash_organizationId_raw__fkey" FOREIGN KEY ("cacheFileHash", "organizationId", "raw", "ocrEngine") REFERENCES "organization_file_cache"("hash", "organizationId", "raw", "ocrEngine") ON DELETE RESTRICT ON UPDATE CASCADE;

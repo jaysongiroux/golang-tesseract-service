@@ -143,7 +143,7 @@ model OrganizationFileCache {
   organizationId         BigInt
   hash                   String
   createdAt              DateTime                 @default(now())
-  results                String
+  documentKey            String
   ocrEngine              OCREngine
   raw                    Boolean                  @default(false)
   organization           Organization             @relation(fields: [organizationId], references: [id], onDelete: Cascade)

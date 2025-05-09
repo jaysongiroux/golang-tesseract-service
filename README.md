@@ -14,6 +14,7 @@ A lightweight OCR (Optical Character Recognition) service built with Golang and 
 - 💰 Polar for Monetization + Metrics tracking
 - 🗃️ Prisma For Postgres ORM
 - 📧 [Resend](https://resend.com) for email communication
+- 📄 CloudFlare R2 support for cached results storage
 
 ## Getting Started
 
@@ -112,9 +113,6 @@ For setup instructions, see the [deployment guide](deployment-guide.md).
 
 ## 🛠️ Future Plans
 - Horizontal scaling configuration for high-load scenarios
-
-## Wish List
-- S3/ R2 Support for cached blog storage
 
 ## 📄 License
 MIT

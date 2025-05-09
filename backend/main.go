@@ -10,7 +10,6 @@ import (
 
 	authApis "serverless-tesseract/apis/auth"
 	serviceApis "serverless-tesseract/apis/service"
-	"serverless-tesseract/db"
 
 	_ "serverless-tesseract/docs"
 
@@ -31,9 +30,6 @@ import (
 func main() {
 	// Load .env file if it exists
 	_ = godotenv.Load()
-
-	// Initialize database connection
-	db.ConnectDatabase()
 
 	r := gin.Default()
 

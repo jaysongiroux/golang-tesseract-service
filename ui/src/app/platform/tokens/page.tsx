@@ -46,6 +46,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { newAPITokenSchema } from "@/utils/zodSchema";
+import Link from "next/link";
 
 const expirationOptions = [
   {
@@ -474,12 +475,19 @@ export default function TokensPage() {
               you need to integrate {process.env.NEXT_PUBLIC_PRODUCT_NAME} into
               your applications.
             </p>
-            <Button
-              variant="outline"
-              className="border-slate-700 bg-slate-800/50 text-slate-300 hover:bg-slate-800 hover:text-white"
+            <Link
+              href={
+                process.env.NEXT_PUBLIC_SERVICE_BACKEND_URL +
+                "/swagger/index.html"
+              }
             >
-              View Documentation
-            </Button>
+              <Button
+                variant="outline"
+                className="border-slate-700 bg-slate-800/50 text-slate-300 hover:bg-slate-800 hover:text-white"
+              >
+                View Documentation
+              </Button>
+            </Link>
           </CardContent>
         </Card>
 

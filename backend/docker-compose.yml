@@ -7,14 +7,8 @@ services:
       dockerfile: Dockerfile
     ports:
       - 8001:8001
-    environment:
-      DATABASE_URL: postgres://admin:password@db:5432/ocrDB
-      ENV: development
-      DB_SSL_MODE: disable
-      SECRET_KEY: yoursecretkey
-      POLAR_ACCESS_TOKEN: ${POLAR_ACCESS_TOKEN}
-      POLAR_OCR_SERVICE_ID: ${POLAR_OCR_SERVICE_ID}
-      POLAR_OCR_METER_ID: ${POLAR_OCR_METER_ID}
+    env_file:
+      - .env
     volumes:
       - ./:/app
 

@@ -43,7 +43,10 @@ export function Footer() {
             <ul className="space-y-2">
               <li>
                 <Link
-                  href="#docs"
+                  href={
+                    process.env.NEXT_PUBLIC_SERVICE_BACKEND_URL +
+                    "/swagger/index.html"
+                  }
                   className="text-slate-400 hover:text-white transition-colors"
                 >
                   Documentation
@@ -77,8 +80,8 @@ export function Footer() {
 
         <div className="mt-12 flex flex-col items-center justify-between space-y-4 border-t border-slate-800 pt-8 md:flex-row md:space-y-0">
           <p className="text-sm text-slate-500">
-            © {new Date().getFullYear()} {process.env.NEXT_PUBLIC_PRODUCT_NAME}.
-            All rights reserved.
+            © {new Date().getFullYear()} {process.env.NEXT_PUBLIC_PRODUCT_NAME}
+            . All rights reserved.
           </p>
 
           <div className="flex space-x-6">

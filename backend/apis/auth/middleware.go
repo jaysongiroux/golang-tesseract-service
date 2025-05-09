@@ -16,6 +16,7 @@ func APIMiddleware() gin.HandlerFunc {
 		jwtToken := c.GetHeader("X-API-Key")
 
 		if jwtToken == "" {
+			log.Println("AUTH: No API key provided")
 			c.JSON(http.StatusUnauthorized, utils.ErrorResponse{Error: utils.ErrTokenRequired.Error()})
 			c.Abort()
 			return
@@ -24,6 +25,7 @@ func APIMiddleware() gin.HandlerFunc {
 		authed_user_id, authed_organization_id, scopes, one_time, err := utils.ValidateAndParseAPIKey(jwtToken)
 
 		if err != nil {
+			log.Println("AUTH: Error validating API key", err)
 			c.JSON(http.StatusUnauthorized, utils.ErrorResponse{Error: utils.ErrInvalidAPIKey.Error()})
 			c.Abort()
 			return
@@ -34,6 +36,7 @@ func APIMiddleware() gin.HandlerFunc {
 			jwt_hash := utils.HashJWT(jwtToken)
 			hash, err := db.GetApiKeyHash(&jwt_hash, authed_organization_id, authed_user_id)
 			if err != nil {
+				log.Println("AUTH: Error getting API key hash", err)
 				c.JSON(http.StatusUnauthorized, utils.ErrorResponse{Error: utils.ErrInvalidAPIKey.Error()})
 				c.Abort()
 				return

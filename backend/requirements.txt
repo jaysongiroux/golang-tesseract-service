@@ -1,7 +1,7 @@
 pillow
 opencv-python
 python-doctr
-"python-doctr[tf]"
+python-doctr[tf]
 mplcursors
 easyocr
 pytesseract

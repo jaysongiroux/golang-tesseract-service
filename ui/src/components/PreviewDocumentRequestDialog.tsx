@@ -95,7 +95,11 @@ const PreviewDocumentRequestDialog = ({
               <CodeBlock
                 language="text"
                 className="max-w-[100%] overflow-x-scroll"
-                code={request?.fileCache?.results}
+                code={
+                  typeof request?.fileCache?.results === "string"
+                    ? request?.fileCache?.results
+                    : JSON.stringify(request?.fileCache?.results, null, 2)
+                }
               />
             )}
           </div>

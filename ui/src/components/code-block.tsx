@@ -47,14 +47,16 @@ export function CodeBlock({
       </div>
 
       <div className="px-4 py-2">
-        <code
-          className={cn(
-            "text-slate-300 text-sm",
-            language && `language-${language}`
-          )}
-        >
-          {code}
-        </code>
+        <pre className="whitespace-pre-wrap w-full">
+          <code
+            className={cn(
+              "text-slate-300 text-sm",
+              language && `language-${language}`
+            )}
+          >
+            {code}
+          </code>
+        </pre>
       </div>
     </div>
   );

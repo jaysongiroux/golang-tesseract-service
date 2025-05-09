@@ -2,12 +2,12 @@ package db
 
 import (
 	"database/sql"
-	"encoding/json"
 	"fmt"
 	"log"
 	"os"
 	"serverless-tesseract/models"
 	"serverless-tesseract/polar"
+	"serverless-tesseract/r2"
 	"serverless-tesseract/utils"
 	"strings"
 	"time"
@@ -20,25 +20,23 @@ import (
 var DB *sql.DB
 
 // ConnectDatabase initializes the database connection
-func ConnectDatabase() {
+func init() {
 	// Load environment variables from .env file if it exists
 	_ = godotenv.Load()
 
 	dsn := os.Getenv("DATABASE_URL")
 	if dsn == "" {
-		log.Fatal("DATABASE_URL environment variable not set")
+		panic("DATABASE_URL environment variable not set")
 	}
 
 	// Check if SSL mode is explicitly set in the connection string
-	sslMode := os.Getenv("DB_SSL_MODE")
-	if sslMode == "" {
-		// Default to disable for local development
-		env := os.Getenv("ENV")
-		if env == "development" || env == "" {
-			sslMode = "disable"
-		} else {
-			sslMode = "require"
-		}
+	// Default to disable for local development
+	var sslMode string
+	env := os.Getenv("ENV")
+	if env == "development" || env == "" {
+		sslMode = "disable"
+	} else {
+		sslMode = "require"
 	}
 
 	// Only append SSL mode if not already in the DSN
@@ -158,18 +156,18 @@ func GetOrganization(organizationId int64) (models.Organization, error) {
 func GetFileHashCache(hash string, organizationId int64, raw bool, engine string) (results *utils.OCRResponseList, err error) {
 	// find unique cache result based off raw, organizationId, and hash
 	query := `
-		SELECT results, "ocrEngine", raw
+		SELECT "documentKey", "ocrEngine", raw
 		FROM organization_file_cache 
 		WHERE hash = $1 AND "organizationId" = $2 AND raw = $3 AND "ocrEngine" = $4
 		ORDER BY "createdAt" DESC
 		LIMIT 1
 	`
 
-	var resultsJSON []byte
+	var documentKey string
 	var ocrEngine string
 	var rawValue bool
 
-	err = DB.QueryRow(query, hash, organizationId, raw, engine).Scan(&resultsJSON, &ocrEngine, &rawValue)
+	err = DB.QueryRow(query, hash, organizationId, raw, engine).Scan(&documentKey, &ocrEngine, &rawValue)
 	if err != nil {
 		if err == sql.ErrNoRows {
 			return nil, nil
@@ -177,13 +175,16 @@ func GetFileHashCache(hash string, organizationId int64, raw bool, engine string
 		return nil, fmt.Errorf("failed to get file hash cache: %w", err)
 	}
 
-	var ocrResponseList utils.OCRResponseList
-	err = json.Unmarshal(resultsJSON, &ocrResponseList)
-	if err != nil {
-		return nil, fmt.Errorf("failed to unmarshal results: %w", err)
+	if documentKey == "" {
+		return nil, nil
 	}
 
-	return &ocrResponseList, nil
+	ocrResponseList, err := r2.GetObject(documentKey)
+	if err != nil {
+		return nil, fmt.Errorf("failed to get object from r2: %w", err)
+	}
+
+	return ocrResponseList, nil
 }
 
 func GetOrganizationPolarCustomerId(organizationId int64) (string, error) {
@@ -240,10 +241,12 @@ func SaveFileHashCache(
 	engine string,
 	raw bool,
 ) error {
+	document_key := fmt.Sprintf("%d-%s-%s-%d.json", organizationId, engine, hash, time.Now().Unix())
+
 	query := `
 		INSERT INTO organization_file_cache (
 			hash, 
-			results, 
+			"documentKey", 
 			"createdAt", 
 			"ocrEngine",
 			"organizationId",
@@ -252,20 +255,40 @@ func SaveFileHashCache(
 		VALUES ($1, $2, $3, $4, $5, $6)
 		ON CONFLICT (hash, "organizationId", raw, "ocrEngine")
 		DO UPDATE SET
-			results = $2,
+			"documentKey" = $2,
 			"createdAt" = $3,
 			"ocrEngine" = $4,
 			"raw" = $6
 	`
 
-	resultsBytes, err := json.Marshal(results)
-	if err != nil {
-		return fmt.Errorf("failed to marshal results: %w", err)
-	}
-
-	_, err = DB.Exec(query, hash, string(resultsBytes), time.Now(), engine, organizationId, raw)
+	_, err := DB.Exec(query, hash, document_key, time.Now(), engine, organizationId, raw)
 	if err != nil {
 		return fmt.Errorf("failed to save file hash cache: %w", err)
+	}
+
+	err = r2.UploadObject(document_key, results)
+	if err != nil {
+		// delete the cache from the db
+		err = DeleteFileHashCache(hash, organizationId, raw, engine)
+		if err != nil {
+			log.Printf("failed to delete cache: %s", err)
+			return fmt.Errorf("failed to delete cache: %w", err)
+		}
+		return fmt.Errorf("failed to upload object to r2: %w", err)
+	}
+
+	return nil
+}
+
+func DeleteFileHashCache(hash string, organizationId int64, raw bool, engine string) error {
+	query := `
+		DELETE FROM organization_file_cache
+		WHERE hash = $1 AND "organizationId" = $2 AND raw = $3 AND "ocrEngine" = $4
+	`
+
+	_, err := DB.Exec(query, hash, organizationId, raw, engine)
+	if err != nil {
+		return fmt.Errorf("failed to delete file hash cache: %w", err)
 	}
 
 	return nil

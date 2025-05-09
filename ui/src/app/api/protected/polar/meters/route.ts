@@ -48,7 +48,7 @@ const getHandler = async (req: NextRequest, session: Session) => {
   });
 
   const meters = await api.customerMeters.list({
-    externalCustomerId: organization.polarCustomerId,
+    externalCustomerId: organization.id.toString(),
     meterId: process.env.POLAR_OCR_METER_ID as string,
   });
 

@@ -5,6 +5,7 @@ go 1.23.0
 toolchain go1.24.2
 
 require (
+	github.com/aws/aws-sdk-go v1.55.7
 	github.com/gin-gonic/gin v1.10.0
 	github.com/golang-jwt/jwt/v5 v5.0.0
 	github.com/joho/godotenv v1.5.1
@@ -21,6 +22,7 @@ require (
 	github.com/davecgh/go-spew v1.1.1 // indirect
 	github.com/ericlagergren/decimal v0.0.0-20221120152707-495c53812d05 // indirect
 	github.com/gorilla/i18n v0.0.0-20150820051429-8b358169da46 // indirect
+	github.com/jmespath/go-jmespath v0.4.0 // indirect
 	github.com/pmezard/go-difflib v1.0.0 // indirect
 	github.com/sirupsen/logrus v1.9.3 // indirect
 	github.com/spyzhov/ajson v0.8.0 // indirect

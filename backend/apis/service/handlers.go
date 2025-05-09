@@ -190,7 +190,7 @@ func OCRService2(c *gin.Context) {
 			int64(token_count),
 			fileHash,
 			raw == "true",
-			nil,
+			&fileHash,
 		)
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, utils.ErrorResponse{Error: fmt.Sprintf("Failed to record OCR request: %v", err)})
@@ -343,7 +343,7 @@ func OCRService2(c *gin.Context) {
 		number_of_tokens,
 		fileHash,
 		raw == "true",
-		nil,
+		&fileHash,
 	)
 	if err != nil {
 		c.JSON(http.StatusInternalServerError, utils.ErrorResponse{Error: fmt.Sprintf("Failed to create OCR request: %v", err)})

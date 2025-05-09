@@ -40,7 +40,6 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
   const { data: session } = useSession({
     required: true,
     onUnauthenticated: () => {
-      setSessionUser(null);
       router.push("/");
     },
   });

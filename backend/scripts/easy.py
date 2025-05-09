@@ -1,11 +1,32 @@
 import sys
 import json
 import easyocr
+import easyocr.cli
 from utils.tools import compile_raw_response
+
+download_directory = '/tmp/models'
+gpu_enabled = True
+detect_network = 'craft'
+recog_network = 'standard'
+lang_list = ['en']
 
 def main():
     # get page index from argument
     page_index = sys.argv[1]
+    
+    # load and download the models
+    if page_index == 'load':
+        reader = easyocr.Reader(
+            lang_list=lang_list,
+            gpu=gpu_enabled,
+            model_storage_directory=download_directory,
+            user_network_directory=download_directory,
+            detect_network=detect_network,
+            recog_network=recog_network,
+            detector=True,
+            recognizer=True,
+        )
+        return
     
     # check if raw argument is provided
     raw = False
@@ -13,7 +34,17 @@ def main():
         raw = sys.argv[2] == 'raw'
     
     image_bytes = sys.stdin.buffer.read()
-    reader = easyocr.Reader(['en'])
+    reader = easyocr.Reader(
+        lang_list=lang_list,
+        gpu=gpu_enabled,
+        model_storage_directory=download_directory,
+        user_network_directory=download_directory,
+        detect_network=detect_network,
+        recog_network=recog_network,
+        detector=True,
+        recognizer=True,
+        download_enabled=False
+    )
     result = reader.readtext(image_bytes)
     data = []
     for bbox, text, confidence in result:
@@ -38,7 +69,7 @@ def main():
                     'y': int(bbox[3][1])
                 }
             },
-            'confidence': confidence/100
+            'confidence': confidence
         })
     
     if raw:

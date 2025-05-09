@@ -5,6 +5,7 @@ import {
   PrismaClient,
 } from "@prisma/client";
 import bcrypt from "bcryptjs";
+import { Customer } from "@polar-sh/sdk/models/components/customer.js";
 
 const prisma = new PrismaClient();
 
@@ -35,11 +36,24 @@ async function main() {
     },
   });
 
-  const polarCustomer = await api.customers.create({
-    email,
-    externalId: org.id.toString(),
-    name: org.name,
-  });
+  let polarCustomer: Customer;
+  try {
+    polarCustomer = await api.customers.create({
+      email,
+      externalId: org.id.toString(),
+      name: org.name,
+    });
+  } catch (error) {
+    console.log("Error attempting to create a customer", error);
+    try {
+      polarCustomer = await api.customers.getExternal({
+        externalId: org.id.toString(),
+      });
+    } catch (error) {
+      console.log("Error attempting to get a customer", error);
+      throw error;
+    }
+  }
 
   await prisma.organization.update({
     where: { id: org.id },

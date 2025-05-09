@@ -19,10 +19,15 @@ RUN apt update \
     libglib2.0-0
 
 # Install Python dependencies
-RUN pip3 install --no-cache-dir --break-system-packages -r requirements.txt
+COPY requirements.txt /usr/local/bin/requirements.txt
+RUN pip3 install --no-cache-dir --break-system-packages -r /usr/local/bin/requirements.txt
 
 COPY go.mod go.sum ./
 RUN go get github.com/otiai10/gosseract/v2
 RUN go mod download
+
+# download the easyocr models
+COPY scripts/ /usr/local/bin/
+RUN python3 /usr/local/bin/easy.py load
 
 CMD ["air", "-c", ".air.toml"]

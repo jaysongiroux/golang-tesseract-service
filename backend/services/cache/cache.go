@@ -5,8 +5,6 @@ import (
 	"serverless-tesseract/utils"
 )
 
-// TODO: refactor to support S3 JSON blobs instead of postgres
-// TODO: refactor to support fetching for specific engine
 func GetCacheResult(
 	fileHash string,
 	cache_policy utils.CachePolicyType,
@@ -21,8 +19,12 @@ func GetCacheResult(
 
 	// get the cache result from the database
 	cacheResult, err := db.GetFileHashCache(fileHash, organizationId, raw, ocrEngine)
-	if err != nil || cacheResult == nil && cache_policy == utils.CacheOnly {
+	if err != nil || (cacheResult == nil && cache_policy == utils.CacheOnly) {
 		return nil, false, err
+	}
+
+	if cacheResult == nil {
+		return nil, false, nil
 	}
 
 	return cacheResult, true, nil
