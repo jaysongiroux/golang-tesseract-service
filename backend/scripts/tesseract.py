@@ -45,7 +45,7 @@ def main():
                         'y': d['top'][i] + height
                     }
                 },
-                'confidence': d['conf'][i]
+                'confidence': d['conf'][i]/100
                 })
             
     if raw:
