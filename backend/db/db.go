@@ -181,7 +181,8 @@ func GetFileHashCache(hash string, organizationId int64, raw bool, engine string
 
 	ocrResponseList, err := r2.GetObject(documentKey)
 	if err != nil {
-		return nil, fmt.Errorf("failed to get object from r2: %w", err)
+		log.Printf("failed to get object from r2: %v", err)
+		return nil, nil
 	}
 
 	return ocrResponseList, nil

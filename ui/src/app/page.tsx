@@ -107,8 +107,7 @@ export default function Home() {
                     animate={{ opacity: 1 }}
                     transition={{ delay: 1.0, duration: 0.3 }}
                   >
-                    {/* POST request with cache_policy=cache_first */}$ curl
-                    https://api.{process.env.NEXT_PUBLIC_DOMAIN_NAME}
+                    $ curl https://api.{process.env.NEXT_PUBLIC_DOMAIN_NAME}
                     /services/ocr -X POSt -F file=@invoice.pdf -H
                     &apos;Content-Type: multipart/form-data&apos; -H
                     &apos;Authorization: Bearer YOUR_KEY&apos;

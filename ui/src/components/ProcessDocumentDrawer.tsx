@@ -16,7 +16,6 @@ import {
 import { File, FileText, Loader2, Trash } from "lucide-react";
 import Dropzone from "shadcn-dropzone";
 import { Card, CardContent, CardTitle } from "./ui/card";
-import { CodeBlock } from "./code-block";
 import { OCREngine, OrganizationMemberAPIKeyScope } from "@prisma/client";
 import { OneTimeTokenResponse } from "@/app/api/protected/organization/tokens/one-time/types";
 import { useUser } from "@/providers";
@@ -27,10 +26,10 @@ import {
   DialogFooter,
   DialogHeader,
   DialogTitle,
-  DialogTrigger,
 } from "./ui/dialog";
 import { cn } from "@/lib/utils";
 import { OCRResponseList } from "@/lib/types";
+import SyntaxCodeBlock from "./SyntaxCodeBlock";
 
 export function ProcessDocumentDrawer({}) {
   const { selectedOrg } = useUser();
@@ -328,11 +327,7 @@ export function ProcessDocumentDrawer({}) {
               )}
             >
               <label className="text-sm text-slate-500">Results</label>
-              <CodeBlock
-                language="OCR Output"
-                code={results}
-                className="bg-slate-900"
-              />
+              <SyntaxCodeBlock lang="json">{results}</SyntaxCodeBlock>
             </div>
           </div>
         </div>

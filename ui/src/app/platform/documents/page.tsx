@@ -88,6 +88,7 @@ export default function DocumentsPage() {
                   <TableHead className="max-w-[100px]">Date</TableHead>
                   <TableHead className="max-w-[100px]">Pages</TableHead>
                   <TableHead className="max-w-[100px]">Status</TableHead>
+                  <TableHead className="max-w-[100px]">Cache Hit</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -128,6 +129,18 @@ export default function DocumentsPage() {
                           )}
                         >
                           {document.success ? "Success" : "Failed"}
+                        </Badge>
+                      </TableCell>
+                      <TableCell>
+                        <Badge
+                          className={cn(
+                            "bg-green-500/20 text-green-400",
+                            document.cacheHit
+                              ? "bg-green-500/20 text-green-400"
+                              : "bg-red-500/20 text-red-400"
+                          )}
+                        >
+                          {document.cacheHit ? "Yes" : "No"}
                         </Badge>
                       </TableCell>
                     </TableRow>

@@ -3,6 +3,9 @@ import { prisma } from "@/lib/prisma";
 import { OrganizationMemberPermissions } from "@prisma/client";
 import { Session } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
+import { GetObjectCommand } from "@aws-sdk/client-s3";
+import { R2 } from "@/utils/r2";
+import { ResultResponse } from "./types";
 
 const handler = async (req: NextRequest, session: Session) => {
   if (!session.user?.id) {
@@ -10,12 +13,18 @@ const handler = async (req: NextRequest, session: Session) => {
   }
 
   const organizationId = req.nextUrl.searchParams.get("organizationId");
-  const limit = req.nextUrl.searchParams.get("limit") || "10";
-  const offset = req.nextUrl.searchParams.get("offset") || "0";
+  const requestId = req.nextUrl.searchParams.get("requestId");
 
   if (!organizationId) {
     return NextResponse.json(
       { error: "Organization ID not found" },
+      { status: 400 }
+    );
+  }
+
+  if (!requestId) {
+    return NextResponse.json(
+      { error: "Request ID not found" },
       { status: 400 }
     );
   }
@@ -50,39 +59,45 @@ const handler = async (req: NextRequest, session: Session) => {
     );
   }
 
-  const requests = await prisma.organizationOCRRequest.findMany({
+  const request = (await prisma.organizationOCRRequest.findUnique({
     where: {
       organizationId: parseInt(organizationId),
-    },
-    orderBy: {
-      createdAt: "desc",
+      id: parseInt(requestId),
     },
     include: {
       fileCache: true,
     },
-    skip: parseInt(offset),
-    take: parseInt(limit),
-  });
+  })) as ResultResponse;
 
-  for (const request of requests) {
-    request.id = request.id.toString() as unknown as bigint;
-    request.tokenCount = request.tokenCount.toString() as unknown as bigint;
-    request.organizationId = parseInt(organizationId) as unknown as bigint;
-    request.numOfPages = parseInt(
-      request.numOfPages.toString()
-    ) as unknown as bigint;
+  if (!request) {
+    return NextResponse.json({ error: "Request not found" }, { status: 400 });
+  }
 
-    if (request.fileCache) {
-      request.fileCache.organizationId = parseInt(
-        organizationId
-      ) as unknown as bigint;
+  request.id = request.id.toString() as unknown as bigint;
+  request.tokenCount = request.tokenCount.toString() as unknown as bigint;
+  request.organizationId = parseInt(organizationId) as unknown as bigint;
+  request.numOfPages = parseInt(
+    request.numOfPages.toString()
+  ) as unknown as bigint;
+
+  if (request.fileCache) {
+    const command = new GetObjectCommand({
+      Bucket: process.env.R2_BUCKET_NAME,
+      Key: request.fileCache.documentKey,
+    });
+    const response = await R2.send(command);
+    const body = await response.Body?.transformToString();
+    if (body) {
+      request.fileCache.results = JSON.parse(body);
     }
+
+    request.fileCache.organizationId = parseInt(
+      organizationId
+    ) as unknown as bigint;
   }
 
   return NextResponse.json({
-    requests,
-    limit: parseInt(limit),
-    offset: parseInt(offset),
+    request,
   });
 };
 

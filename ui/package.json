@@ -72,6 +72,7 @@
     "eslint": "^9",
     "eslint-config-next": "15.3.0",
     "prisma": "^6.6.0",
+    "shiki": "^3.4.0",
     "tailwindcss": "^4",
     "ts-node": "^10.9.2",
     "typescript": "^5.8.3"

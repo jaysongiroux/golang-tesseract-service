@@ -142,3 +142,10 @@ body {
 iframe {
   background-color: transparent;
 }
+
+.formatted-code-container {
+  pre {
+    white-space: pre-wrap;
+    padding: 1rem;
+  }
+}
