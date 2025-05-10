@@ -1,7 +1,17 @@
-pillow
+--extra-index-url https://download.pytorch.org/whl/cpu
+
 opencv-python
+pillow
 python-doctr
 python-doctr[tf]
-mplcursors
 easyocr
 pytesseract
+scipy
+numpy
+scikit-image
+python-bidi
+PyYAML
+Shapely
+pyclipper
+torch==2.7.0+cpu
+torchvision

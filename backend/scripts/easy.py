@@ -5,7 +5,7 @@ import easyocr.cli
 from utils.tools import compile_raw_response
 
 download_directory = '/tmp/models'
-gpu_enabled = True
+gpu_enabled = False
 detect_network = 'craft'
 recog_network = 'standard'
 lang_list = ['en']
@@ -16,7 +16,7 @@ def main():
     
     # load and download the models
     if page_index == 'load':
-        reader = easyocr.Reader(
+        _ = easyocr.Reader(
             lang_list=lang_list,
             gpu=gpu_enabled,
             model_storage_directory=download_directory,
@@ -25,6 +25,7 @@ def main():
             recog_network=recog_network,
             detector=True,
             recognizer=True,
+            verbose=True
         )
         return
     
@@ -43,7 +44,8 @@ def main():
         recog_network=recog_network,
         detector=True,
         recognizer=True,
-        download_enabled=False
+        download_enabled=False,
+        verbose=False
     )
     result = reader.readtext(image_bytes)
     data = []

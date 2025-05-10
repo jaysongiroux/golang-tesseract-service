@@ -38,15 +38,21 @@ RUN apt update \
     tesseract-ocr \
     tesseract-ocr-eng \
     libpng-dev \ 
-    python3 \
     python3-pip \
-    python3-dev
+    python3 \
+    libgl1-mesa-glx \
+    libglib2.0-0
 
-RUN pip3 install --no-cache-dir --break-system-packages -r /usr/local/bin/requirements.txt
+RUN pip3 install --break-system-packages -r /usr/local/bin/requirements.txt
 
 # download the easyocr models
 RUN python3 /usr/local/bin/scripts/easy.py load
 
+RUN apt-get autoremove -y \
+    && apt-get clean -y \
+    && rm -rf /var/lib/apt/lists
+
 EXPOSE 8001
 
 CMD ["/usr/local/bin/app"]
+
