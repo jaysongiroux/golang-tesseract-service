@@ -7,5 +7,9 @@ type Props = {
 };
 
 export const NextAuthProvider = ({ children }: Props) => {
-  return <SessionProvider>{children}</SessionProvider>;
+  return (
+    <SessionProvider refetchInterval={120} refetchOnWindowFocus={false}>
+      {children}
+    </SessionProvider>
+  );
 };

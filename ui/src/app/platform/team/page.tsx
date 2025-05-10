@@ -214,7 +214,7 @@ export default function TeamPage() {
     if (!selectedOrg) return;
 
     try {
-      const foundInvite = invites.find((invite) => invite.id === inviteId);
+      const foundInvite = invites?.find((invite) => invite.id === inviteId);
       if (!foundInvite) return;
 
       const resp = await fetch(
@@ -307,10 +307,10 @@ export default function TeamPage() {
               currentInviteId: "",
               type: "member",
               currentPermissions:
-                teamMembers.find((member) => member.userId === memberId)
+                teamMembers?.find((member) => member.userId === memberId)
                   ?.permissions || [],
               currentEmail:
-                teamMembers.find((member) => member.userId === memberId)?.user
+                teamMembers?.find((member) => member.userId === memberId)?.user
                   .email || "",
               onInvite: (member) => {
                 if ("userId" in member) {
@@ -391,11 +391,11 @@ export default function TeamPage() {
               currentInviteId: inviteId,
               currentMemberId: "",
               currentEmail:
-                invites.find((invite) => invite.id === inviteId)?.email || "",
+                invites?.find((invite) => invite.id === inviteId)?.email || "",
               type: "invite",
               currentPermissions:
-                invites.find((invite) => invite.id === inviteId)?.permissions ||
-                [],
+                invites?.find((invite) => invite.id === inviteId)
+                  ?.permissions || [],
               onInvite: (invite) => {
                 if ("id" in invite) {
                   setInvites((prev) =>

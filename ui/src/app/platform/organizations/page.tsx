@@ -115,7 +115,7 @@ export default function OrganizationsPage() {
       }
     } else {
       if (selectedOrg?.id === orgId) {
-        const nextOrg = filteredOrgs.find((org) => org.id !== orgId);
+        const nextOrg = filteredOrgs?.find((org) => org.id !== orgId);
         setSelectedOrg(nextOrg || null);
       }
 

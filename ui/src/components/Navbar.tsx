@@ -100,7 +100,7 @@ export function Navbar() {
             </Link>
 
             <div className="flex flex-col space-y-4 pt-4">
-              <Link href="/login">
+              <Link href="/auth/login">
                 <Button
                   variant="ghost"
                   className="justify-start text-slate-300 hover:text-white"
@@ -108,7 +108,7 @@ export function Navbar() {
                   Sign In
                 </Button>
               </Link>
-              <Link href="/register">
+              <Link href="/auth/signup">
                 <GlowingButton>Start Free</GlowingButton>
               </Link>
             </div>

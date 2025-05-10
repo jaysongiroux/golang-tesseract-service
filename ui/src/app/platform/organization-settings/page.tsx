@@ -54,7 +54,7 @@ export default function OrganizationSettingsPage() {
         throw new Error(data.error);
       }
 
-      const nextOrg = organizations.find((org) => org.id !== organization?.id);
+      const nextOrg = organizations?.find((org) => org.id !== organization?.id);
       if (nextOrg) {
         setSelectedOrg(nextOrg);
       }

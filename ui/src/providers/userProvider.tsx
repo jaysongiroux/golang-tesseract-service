@@ -12,7 +12,7 @@ import { ExtendedUser } from "@/lib/types";
 import { OrganizationsResponse } from "@/app/api/protected/organizations/types";
 import { OrganizationMemberAPIKeysResponse } from "@/app/api/protected/organization/tokens/types";
 import { UsageResponse } from "@/app/api/protected/usage/types";
-import { useRouter } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 import { Session } from "next-auth";
 
 type ExtendedOrganization = OrganizationsResponse[number];
@@ -35,12 +35,16 @@ const UserContext = createContext<UserContextType | undefined>(undefined);
 
 export function UserProvider({ children }: { children: React.ReactNode }) {
   const router = useRouter();
+  const pathname = usePathname();
   const [sessionUser, setSessionUser] = useState<Session["user"] | null>(null);
 
   const { data: session } = useSession({
     required: true,
     onUnauthenticated: () => {
-      router.push("/");
+      // only redirect if the user is on a protected route
+      if (pathname.includes("/platform")) {
+        router.push("/");
+      }
     },
   });
 
@@ -88,7 +92,7 @@ export function UserProvider({ children }: { children: React.ReactNode }) {
       if (data.length > 0 && !selectedOrg) {
         const selectedOrgId = localStorage.getItem("selectedOrg");
         if (selectedOrgId) {
-          const foundOrg = data.find((org) => org.id === selectedOrgId);
+          const foundOrg = data?.find((org) => org.id === selectedOrgId);
           if (foundOrg) {
             setSelectedOrg(foundOrg);
           } else {

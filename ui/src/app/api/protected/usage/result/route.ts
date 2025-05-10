@@ -4,7 +4,7 @@ import { OrganizationMemberPermissions } from "@prisma/client";
 import { Session } from "next-auth";
 import { NextRequest, NextResponse } from "next/server";
 import { GetObjectCommand } from "@aws-sdk/client-s3";
-import { R2 } from "@/utils/r2";
+import { R2, R2_BUCKET } from "@/utils/r2";
 import { ResultResponse } from "./types";
 
 const handler = async (req: NextRequest, session: Session) => {
@@ -82,7 +82,7 @@ const handler = async (req: NextRequest, session: Session) => {
 
   if (request.fileCache) {
     const command = new GetObjectCommand({
-      Bucket: process.env.R2_BUCKET_NAME,
+      Bucket: R2_BUCKET,
       Key: request.fileCache.documentKey,
     });
     const response = await R2.send(command);

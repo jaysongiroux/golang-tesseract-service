@@ -87,7 +87,7 @@ export function PolarProvider({ children }: PolarProviderProps) {
     fetchMeters();
   }, [selectedOrg, fetchMeters]);
 
-  const ocrProduct = products.find(
+  const ocrProduct = products?.find(
     (product) => product.id === process.env.NEXT_PUBLIC_POLAR_OCR_PRODUCT_ID
   );
 

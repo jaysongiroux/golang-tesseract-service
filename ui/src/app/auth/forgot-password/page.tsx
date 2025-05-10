@@ -103,7 +103,7 @@ export default function ForgotPasswordPage() {
                       <span className="text-slate-300">{email}</span>
                     </p>
                     <Link
-                      href="/login"
+                      href="/auth/login"
                       className="text-blue-400 hover:text-blue-300 transition-colors"
                     >
                       Return to login
@@ -146,7 +146,7 @@ export default function ForgotPasswordPage() {
                     <p className="text-slate-400">
                       Remember your password?{" "}
                       <Link
-                        href="/login"
+                        href="/auth/login"
                         className="text-blue-400 hover:text-blue-300 transition-colors"
                       >
                         Back to login
