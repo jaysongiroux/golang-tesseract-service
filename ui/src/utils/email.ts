@@ -11,7 +11,7 @@ export const sendEmail = async ({
   subject: string;
   template: React.ReactNode;
 }) => {
-  const resend = new Resend(process.env.RESEND_API_KET);
+  const resend = new Resend(process.env.RESEND_API_KEY);
 
   if (process.env.NODE_ENV === "development") {
     console.log("---");
