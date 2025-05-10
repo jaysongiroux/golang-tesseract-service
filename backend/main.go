@@ -25,7 +25,7 @@ import (
 //	@license.name	MIT
 //	@license.url	https://opensource.org/licenses/MIT
 
-// @host		localhost:8001
+// @host		api.atlasocr.com
 // @BasePath	/api/
 func main() {
 	// Load .env file if it exists

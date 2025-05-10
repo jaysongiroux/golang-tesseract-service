@@ -23,7 +23,7 @@ import {
   OrganizationMember,
   OrganizationMemberPermissions,
 } from "@prisma/client";
-import { PERMISSIONS_MAP } from "@/utils/constants";
+import { PERMISSIONS_MAP } from "@/lib/constants";
 import { inviteMemberClientSchema } from "@/utils/zodSchema";
 import { zodResolver } from "@hookform/resolvers/zod";
 import { Checkbox } from "./ui/checkbox";

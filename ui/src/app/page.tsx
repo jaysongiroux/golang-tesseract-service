@@ -11,9 +11,9 @@ import {
   Braces,
   MessageSquareText,
   Zap,
-  Filter,
-  EyeOff,
   Globe,
+  Database,
+  Users,
 } from "lucide-react";
 import { AnimatedContainer } from "@/components/AnimatedContainer";
 import { AnimatedText } from "@/components/AnimatedText";
@@ -22,6 +22,9 @@ import { AnimatedFeatureCard } from "@/components/AnimatedFeatureCard";
 import { AnimatedProductCard } from "@/components/AnimatedProductCard";
 import { FloatingAnimation } from "@/components/FloatingAnimation";
 import { Particles } from "@/components/Particles";
+import SyntaxCodeBlock from "@/components/SyntaxCodeBlock";
+import { CURL_CODE, JS_CODE } from "@/lib/code";
+import { DOCUMENTATION_URL } from "@/lib/constants";
 
 export default function Home() {
   return (
@@ -107,10 +110,7 @@ export default function Home() {
                     animate={{ opacity: 1 }}
                     transition={{ delay: 1.0, duration: 0.3 }}
                   >
-                    $ curl https://api.{process.env.NEXT_PUBLIC_DOMAIN_NAME}
-                    /services/ocr -X POSt -F file=@invoice.pdf -H
-                    &apos;Content-Type: multipart/form-data&apos; -H
-                    &apos;Authorization: Bearer YOUR_KEY&apos;
+                    {CURL_CODE}
                   </motion.div>
                   <motion.div
                     initial={{ opacity: 0 }}
@@ -156,7 +156,7 @@ export default function Home() {
             />
             <AnimatedFeatureCard
               title="Blazing Fast"
-              description="Process a single-page PDF in under 300ms with automatic caching."
+              description="Process a single-page PDF in under 300ms with automatic caching utilizing Tesseract OCR Engine."
               icon={<Zap className="h-6 w-6 text-white" />}
               index={3}
             />
@@ -174,22 +174,24 @@ export default function Home() {
           </AnimatedText>
           <div className="grid gap-8 md:grid-cols-3">
             <AnimatedProductCard
-              title="Auto-Classifier"
-              description="Automatically detect document types (invoices, contracts, IDs) to route or process them accordingly."
-              icon={<Filter className="h-6 w-6 text-white" />}
-              index={0}
-            />
-            <AnimatedProductCard
-              title="Redact & Replace"
-              description="Use AI to automatically redact sensitive information or replace it with pseudonyms."
-              icon={<EyeOff className="h-6 w-6 text-white" />}
-              index={1}
-            />
-            <AnimatedProductCard
-              title="Multi-Language OCR & Translation"
-              description="Extract and translate documents in over 50 languages with one call."
+              title="Multi-Engine OCR"
+              description="Utilize multiple OCR engines to extract text from documents, optimizing for accuracy, performance, and reliability."
               icon={<Globe className="h-6 w-6 text-white" />}
               index={2}
+            />
+
+            <AnimatedProductCard
+              title="Caching"
+              description="Cache processed documents to improve performance and reduce costs."
+              icon={<Database className="h-6 w-6 text-white" />}
+              index={3}
+            />
+
+            <AnimatedProductCard
+              title="Multi-User Support"
+              description="Support multiple users with different roles and permissions."
+              icon={<Users className="h-6 w-6 text-white" />}
+              index={4}
             />
           </div>
         </div>
@@ -224,14 +226,29 @@ export default function Home() {
       <section className="py-20 bg-slate-900/50" id="docs">
         <div className="container mx-auto px-4">
           <AnimatedText className="text-center">
-            <h2 className="mb-12 text-3xl font-bold md:text-4xl">
-              Simple Integration
-            </h2>
+            <div className="mb-12">
+              <h2 className="text-3xl font-bold md:text-4xl">
+                Simple Integration
+              </h2>
+              <p className="text-slate-400">
+                Use the following code snippets to integrate with our API.
+              </p>
+              <p className="text-slate-400">
+                Or check out our{" "}
+                <Link
+                  className="text-blue-500 hover:text-blue-600"
+                  href={DOCUMENTATION_URL}
+                >
+                  API Documentation
+                </Link>{" "}
+                for more details.
+              </p>
+            </div>
           </AnimatedText>
           <AnimatedContainer className="mx-auto max-w-3xl">
             <Tabs defaultValue="curl" className="w-full">
               <TabsList className="grid w-full grid-cols-2">
-                <TabsTrigger value="curl">cURL</TabsTrigger>
+                <TabsTrigger value="curl">CURL</TabsTrigger>
                 <TabsTrigger value="javascript">JavaScript</TabsTrigger>
               </TabsList>
               <TabsContent value="curl" className="mt-4">
@@ -242,9 +259,10 @@ export default function Home() {
                 >
                   <CodeBlock
                     language="bash"
-                    code={`curl https://api.${process.env.NEXT_PUBLIC_DOMAIN_NAME}/services/ocr \\
-  -F file=@contract.pdf \\
-  -H "Authorization: Bearer YOUR_KEY"`}
+                    codeString={CURL_CODE}
+                    code={
+                      <SyntaxCodeBlock lang="bash">{CURL_CODE}</SyntaxCodeBlock>
+                    }
                   />
                 </motion.div>
               </TabsContent>
@@ -256,16 +274,10 @@ export default function Home() {
                 >
                   <CodeBlock
                     language="javascript"
-                    code={`const response = await fetch('https://api.${process.env.NEXT_PUBLIC_DOMAIN_NAME}/services/ocr', {
-  method: 'POST',
-  headers: {
-    'Authorization': 'Bearer YOUR_KEY'
-  },
-  body: formData
-});
-
-const data = await response.json();
-console.log(data);`}
+                    codeString={JS_CODE}
+                    code={
+                      <SyntaxCodeBlock lang="js">{JS_CODE}</SyntaxCodeBlock>
+                    }
                   />
                 </motion.div>
               </TabsContent>

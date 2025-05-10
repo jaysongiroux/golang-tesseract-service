@@ -39,6 +39,12 @@ export function Navbar() {
             Pricing
           </Link>
           <Link
+            href="/engines"
+            className="text-slate-300 hover:text-white transition-colors"
+          >
+            OCR Engines
+          </Link>
+          <Link
             href="/#docs"
             className="text-slate-300 hover:text-white transition-colors"
           >
@@ -90,6 +96,13 @@ export function Navbar() {
               onClick={() => setIsMenuOpen(false)}
             >
               Pricing
+            </Link>
+            <Link
+              href="/engines"
+              className="text-slate-300 hover:text-white transition-colors"
+              onClick={() => setIsMenuOpen(false)}
+            >
+              OCR Engines
             </Link>
             <Link
               href="#docs"

@@ -147,5 +147,9 @@ iframe {
   pre {
     white-space: pre-wrap;
     padding: 1rem;
+    background-color: oklch(12.9% 0.042 264.695) !important;
+    overflow: hidden;
+    border-bottom-left-radius: 0.5rem;
+    border-bottom-right-radius: 0.5rem;
   }
 }

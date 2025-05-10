@@ -14,7 +14,7 @@ function SyntaxCodeBlock({
     const fetchHtml = async () => {
       const out = await codeToHtml(children, {
         lang,
-        theme: "catppuccin-mocha",
+        theme: "dracula",
         mergeWhitespaces: true,
         mergeSameStyleTokens: true,
       });
@@ -27,7 +27,7 @@ function SyntaxCodeBlock({
 
   return (
     <div
-      className="formatted-code-container rounded-lg border border-slate-800 bg-slate-950"
+      className="formatted-code-container"
       dangerouslySetInnerHTML={{ __html: html }}
     />
   );

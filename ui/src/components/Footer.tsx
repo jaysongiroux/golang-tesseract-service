@@ -1,5 +1,6 @@
 import Link from "next/link";
 import { Github, Globe, Shield, Activity } from "lucide-react";
+import { DOCUMENTATION_URL } from "@/lib/constants";
 
 export function Footer() {
   return (
@@ -35,6 +36,14 @@ export function Footer() {
                   Pricing
                 </Link>
               </li>
+              <li>
+                <Link
+                  href="/engines"
+                  className="text-slate-400 hover:text-white transition-colors"
+                >
+                  OCR Engines
+                </Link>
+              </li>
             </ul>
           </div>
 
@@ -43,10 +52,7 @@ export function Footer() {
             <ul className="space-y-2">
               <li>
                 <Link
-                  href={
-                    process.env.NEXT_PUBLIC_SERVICE_BACKEND_URL +
-                    "/swagger/index.html"
-                  }
+                  href={DOCUMENTATION_URL}
                   className="text-slate-400 hover:text-white transition-colors"
                 >
                   Documentation

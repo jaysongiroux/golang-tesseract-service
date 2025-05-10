@@ -91,7 +91,7 @@ export function ProcessDocumentDrawer({}) {
           method: "POST",
           body: formData,
           headers: {
-            "X-API-Key": token,
+            "x-api-key": token,
           },
         }
       );

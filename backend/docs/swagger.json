@@ -10,7 +10,7 @@
         },
         "version": "1.0"
     },
-    "host": "localhost:8001",
+    "host": "api.atlasocr.com",
     "basePath": "/api/",
     "paths": {
         "/api/ocr": {

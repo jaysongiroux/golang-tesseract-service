@@ -74,7 +74,7 @@ definitions:
         example: 10
         type: integer
     type: object
-host: localhost:8001
+host: api.atlasocr.com
 info:
   contact: {}
   description: This is a lightweight API with JWT authentication for OCR and LLM services.

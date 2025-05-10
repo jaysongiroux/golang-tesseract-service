@@ -18,7 +18,7 @@ import {
   TooltipTrigger,
 } from "./ui/tooltip";
 import { Badge } from "./ui/badge";
-import { PERMISSIONS_MAP } from "@/utils/constants";
+import { PERMISSIONS_MAP } from "@/lib/constants";
 import {
   DropdownMenu,
   DropdownMenuContent,

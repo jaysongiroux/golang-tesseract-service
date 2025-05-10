@@ -1,43 +1,24 @@
 "use client";
 
-import { useState } from "react";
 import Link from "next/link";
 import { motion } from "framer-motion";
 import { GlowingButton } from "@/components/GlowingButton";
 import { Button } from "@/components/ui/button";
-import { Slider } from "@/components/ui/slider";
 import { AnimatedContainer } from "@/components/AnimatedContainer";
 import { AnimatedText } from "@/components/AnimatedText";
 import { AnimatedBackground } from "@/components/AnimatedBackground";
 import { Particles } from "@/components/Particles";
-import { Check, HelpCircle, X } from "lucide-react";
+import { Check, X } from "lucide-react";
 import {
   Accordion,
   AccordionContent,
   AccordionItem,
   AccordionTrigger,
 } from "@/components/ui/accordion";
-import {
-  Tooltip,
-  TooltipContent,
-  TooltipProvider,
-  TooltipTrigger,
-} from "@/components/ui/tooltip";
 import { PRICE_PER_PAGE } from "@/lib/constants";
+import CalculateCostCard from "@/components/CalculateCostCard";
 
 export default function PricingPage() {
-  const [pageCount, setPageCount] = useState(100_000);
-  const freePages = 100;
-
-  const calculateCost = (pages: number): number => {
-    const paidPages = Math.max(0, pages - freePages);
-    return parseFloat((paidPages * PRICE_PER_PAGE).toFixed(2));
-  };
-
-  const totalCost = calculateCost(pageCount);
-  const effectiveCost =
-    pageCount > 0 ? parseFloat((totalCost / pageCount).toFixed(5)) : 0;
-
   return (
     <div className="min-h-screen bg-gradient-to-b from-slate-950 to-slate-900 text-slate-50">
       {/* Hero Section */}
@@ -114,7 +95,7 @@ export default function PricingPage() {
                       Pay as you go for any volume
                     </p>
                     <Link href="/auth/signup">
-                      <Button className="mt-4 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
+                      <Button className="text-slate-50 mt-4 bg-gradient-to-r from-blue-500 to-purple-600 hover:from-blue-600 hover:to-purple-700">
                         Get Started
                       </Button>
                     </Link>
@@ -152,7 +133,7 @@ export default function PricingPage() {
                   transition={{ delay: 0.5 }}
                 >
                   <Link href="/auth/signup">
-                    <GlowingButton className="w-full" asChild>
+                    <GlowingButton className="w-full text-slate-50" asChild>
                       Start Free Trial
                     </GlowingButton>
                   </Link>
@@ -171,77 +152,7 @@ export default function PricingPage() {
               Calculate Your Cost
             </h2>
           </AnimatedText>
-
-          <AnimatedContainer delay={0.2} className="mx-auto max-w-3xl">
-            <div className="rounded-2xl border border-slate-800 bg-slate-900/70 backdrop-blur-lg p-8">
-              <div className="mb-8">
-                <div className="flex items-center justify-between">
-                  <label className="text-lg font-medium">
-                    Monthly Page Volume
-                  </label>
-                  <div className="text-2xl font-bold">
-                    {pageCount.toLocaleString()}
-                  </div>
-                </div>
-                <Slider
-                  className="mt-6"
-                  defaultValue={[100]}
-                  min={100}
-                  max={100000}
-                  step={1000}
-                  onValueChange={(value) => setPageCount(value[0])}
-                />
-                <div className="mt-2 flex justify-between text-sm text-slate-400">
-                  <span>100</span>
-                  <span>5,000</span>
-                  <span>10,000</span>
-                </div>
-              </div>
-
-              <div className="mt-8 grid gap-6 md:grid-cols-2">
-                <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-6">
-                  <h3 className="text-lg font-medium text-slate-300">
-                    Monthly Cost
-                  </h3>
-                  <div className="mt-2 text-3xl font-bold">
-                    ${totalCost}
-                    <span className="ml-1 text-sm text-slate-400">USD</span>
-                  </div>
-                  <p className="mt-2 text-sm text-slate-400">
-                    {freePages} free pages included
-                  </p>
-                </div>
-                <div className="rounded-xl border border-slate-800 bg-slate-950/50 p-6">
-                  <div className="flex items-center">
-                    <h3 className="text-lg font-medium text-slate-300">
-                      Effective Rate
-                    </h3>
-                    <TooltipProvider>
-                      <Tooltip>
-                        <TooltipTrigger>
-                          <HelpCircle className="ml-2 h-4 w-4 text-slate-400" />
-                        </TooltipTrigger>
-                        <TooltipContent>
-                          <p className="max-w-xs">
-                            Your effective rate per page, taking into account
-                            the free tier
-                          </p>
-                        </TooltipContent>
-                      </Tooltip>
-                    </TooltipProvider>
-                  </div>
-                  <div className="mt-2 text-3xl font-bold">
-                    ${effectiveCost}
-                    <span className="ml-1 text-sm text-slate-400">/page</span>
-                  </div>
-                  <p className="mt-2 text-sm text-slate-400">
-                    {Math.round((1 - effectiveCost / PRICE_PER_PAGE) * 100)}%
-                    savings from free tier
-                  </p>
-                </div>
-              </div>
-            </div>
-          </AnimatedContainer>
+          <CalculateCostCard />
         </div>
       </section>
 
@@ -284,7 +195,7 @@ export default function PricingPage() {
                     ${PRICE_PER_PAGE}
                   </td>
                   <td className="py-4 px-6 text-center text-slate-400">
-                    ${PRICE_PER_PAGE}
+                    $0.05-0.10
                   </td>
                 </tr>
                 <tr className="border-b border-slate-800">
@@ -305,8 +216,9 @@ export default function PricingPage() {
                     <X className="mx-auto h-5 w-5 text-red-500" />
                   </td>
                 </tr>
+
                 <tr className="border-b border-slate-800">
-                  <td className="py-4 px-6">Raw OCR Output</td>
+                  <td className="py-4 px-6">Cache Results</td>
                   <td className="py-4 px-6 text-center">
                     <Check className="mx-auto h-5 w-5 text-green-500" />
                   </td>
@@ -315,7 +227,7 @@ export default function PricingPage() {
                   </td>
                 </tr>
                 <tr className="border-b border-slate-800">
-                  <td className="py-4 px-6">Document Q&A</td>
+                  <td className="py-4 px-6">Multi-Engine OCR</td>
                   <td className="py-4 px-6 text-center">
                     <Check className="mx-auto h-5 w-5 text-green-500" />
                   </td>
@@ -324,7 +236,7 @@ export default function PricingPage() {
                   </td>
                 </tr>
                 <tr className="border-b border-slate-800">
-                  <td className="py-4 px-6">Synchronous OCR</td>
+                  <td className="py-4 px-6">Multi-Page PDF Support</td>
                   <td className="py-4 px-6 text-center">
                     <Check className="mx-auto h-5 w-5 text-green-500" />
                   </td>
@@ -418,7 +330,7 @@ export default function PricingPage() {
       <section className="py-16 bg-slate-900/50">
         <div className="container mx-auto px-4 text-center">
           <AnimatedText>
-            <h2 className="mb-4 text-3xl font-bold md:text-4xl">
+            <h2 className="mb-4 text-3xl text-slate-50 font-bold md:text-4xl">
               Ready to Get Started?
             </h2>
           </AnimatedText>
@@ -429,7 +341,7 @@ export default function PricingPage() {
           </AnimatedText>
           <AnimatedContainer delay={0.2}>
             <motion.div whileHover={{ scale: 1.05 }} whileTap={{ scale: 0.95 }}>
-              <GlowingButton size="lg" asChild>
+              <GlowingButton size="lg" asChild className="text-slate-50">
                 <Link href="/auth/signup">Start Free Trial</Link>
               </GlowingButton>
             </motion.div>
