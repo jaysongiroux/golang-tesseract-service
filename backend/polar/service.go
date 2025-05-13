@@ -115,6 +115,7 @@ func CanUserUseOCR(
 	}
 
 	// if there is no subscription, check polar's meter to determine if they're over 100 pages
+	// if there is no meter, that means this is their first request and we should return true
 	meter, err := s.CustomerMeters.List(
 		ctx,
 		operations.CustomerMetersListRequest{
@@ -125,6 +126,10 @@ func CanUserUseOCR(
 
 	if err != nil || meter == nil {
 		return false, errors.New("unable to retrieving customer meter")
+	}
+
+	if len(meter.ListResourceCustomerMeter.Items) == 0 {
+		return true, nil
 	}
 
 	firstMeter := meter.ListResourceCustomerMeter.Items[0]
