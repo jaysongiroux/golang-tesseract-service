@@ -47,7 +47,7 @@ def main():
         download_enabled=False,
         verbose=False
     )
-    result = reader.readtext(image_bytes)
+    result = reader.readtext(image_bytes, batch_size=5)
     data = []
     for bbox, text, confidence in result:
         data.append({
