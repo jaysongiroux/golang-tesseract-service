@@ -2,6 +2,7 @@ package main
 
 import (
 	"log"
+	"os"
 
 	"github.com/gin-gonic/gin"
 
@@ -48,9 +49,11 @@ func main() {
 	// service routes
 	service.POST("/ocr", serviceApis.OCRService2)
 
-	// Server swagger documentation
-	log.Println("Serving swagger docs on /swagger")
-	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	// conditionally serve swagger docs
+	if os.Getenv("ENV") == "development" {
+		log.Println("Serving swagger docs on /swagger")
+		r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
+	}
 
 	// Start the server
 	log.Println("Server starting on port 8001")
