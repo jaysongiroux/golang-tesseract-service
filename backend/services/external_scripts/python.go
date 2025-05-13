@@ -15,8 +15,9 @@ const (
 
 func ExecutePythonOCREngineScript(scriptPath string, imageBytes []byte, args ...string) (utils.OCRResponseList, error) {
 	// Construct full command with Python script and args
-	log.Println("Executing python with the following args: ", append([]string{SCRIPT_PATH + scriptPath}, args...))
-	cmd := exec.Command("python3", append([]string{scriptPath}, args...)...)
+	fullPath := SCRIPT_PATH + scriptPath
+	log.Println("Executing python with the following args: ", append([]string{fullPath}, args...))
+	cmd := exec.Command("python3", append([]string{fullPath}, args...)...)
 
 	// Create pipes for stdin and capture stdout/stderr
 	stdin, err := cmd.StdinPipe()
