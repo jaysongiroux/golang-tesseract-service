@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { Github, Globe, Shield, Activity } from "lucide-react";
+import { Github, Globe, Shield } from "lucide-react";
 import { DOCUMENTATION_URL } from "@/lib/constants";
 
 export function Footer() {
@@ -92,18 +92,11 @@ export function Footer() {
 
           <div className="flex space-x-6">
             <Link
-              href="#"
+              href="/api-docs"
               className="text-slate-400 hover:text-white transition-colors"
               aria-label="API Docs"
             >
               <Globe className="h-5 w-5" />
-            </Link>
-            <Link
-              href="#"
-              className="text-slate-400 hover:text-white transition-colors"
-              aria-label="Status Page"
-            >
-              <Activity className="h-5 w-5" />
             </Link>
             <Link
               href="/privacy"
@@ -113,7 +106,7 @@ export function Footer() {
               <Shield className="h-5 w-5" />
             </Link>
             <Link
-              href="#"
+              href="https://github.com/jaysongiroux/golang-tesseract-service"
               className="text-slate-400 hover:text-white transition-colors"
               aria-label="GitHub"
             >

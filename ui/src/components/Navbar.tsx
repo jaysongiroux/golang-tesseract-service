@@ -45,7 +45,7 @@ export function Navbar() {
             OCR Engines
           </Link>
           <Link
-            href="/#docs"
+            href="/api-docs"
             className="text-slate-300 hover:text-white transition-colors"
           >
             Docs
@@ -105,7 +105,7 @@ export function Navbar() {
               OCR Engines
             </Link>
             <Link
-              href="#docs"
+              href="/api-docs"
               className="text-slate-300 hover:text-white transition-colors"
               onClick={() => setIsMenuOpen(false)}
             >

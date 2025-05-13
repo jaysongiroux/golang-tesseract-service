@@ -6,15 +6,7 @@ import { Button } from "@/components/ui/button";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { CodeBlock } from "@/components/code-block";
 import { GlowingButton } from "@/components/GlowingButton";
-import {
-  Scan,
-  Braces,
-  MessageSquareText,
-  Zap,
-  Globe,
-  Database,
-  Users,
-} from "lucide-react";
+import { Scan, Braces, Zap, Globe, Database, Users } from "lucide-react";
 import { AnimatedContainer } from "@/components/AnimatedContainer";
 import { AnimatedText } from "@/components/AnimatedText";
 import { AnimatedBackground } from "@/components/AnimatedBackground";
@@ -73,7 +65,7 @@ export default function Home() {
                 whileHover={{ scale: 1.05 }}
                 whileTap={{ scale: 0.95 }}
               >
-                <Link href="#docs">
+                <Link href="/api-docs">
                   <Button
                     variant="outline"
                     className="border-slate-700 bg-slate-800/50 text-slate-200 hover:bg-slate-800 hover:text-white"
@@ -135,7 +127,7 @@ export default function Home() {
               Key Features
             </h2>
           </AnimatedText>
-          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-4">
+          <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
             <AnimatedFeatureCard
               title="Intelligent OCR"
               description="Extract text with surgical precision using state-of-the-art AI models."
@@ -147,12 +139,6 @@ export default function Home() {
               description="Go beyond text — instantly convert documents into structured JSON."
               icon={<Braces className="h-6 w-6 text-white" />}
               index={1}
-            />
-            <AnimatedFeatureCard
-              title="Ask Your Docs"
-              description="Transform scanned pages into API-accessible answers using LLMs."
-              icon={<MessageSquareText className="h-6 w-6 text-white" />}
-              index={2}
             />
             <AnimatedFeatureCard
               title="Blazing Fast"

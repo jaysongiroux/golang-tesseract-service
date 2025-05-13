@@ -1,5 +1,6 @@
 "use client";
 
+import { cn } from "@/lib/utils";
 import { useCallback, useEffect, useRef } from "react";
 
 interface Particle {
@@ -13,7 +14,7 @@ interface Particle {
   maxLife: number;
 }
 
-export function Particles() {
+export function Particles({ className }: { className?: string }) {
   const canvasRef = useRef<HTMLCanvasElement>(null);
   const particlesRef = useRef<Particle[]>([]);
   const animationFrameRef = useRef<number>(0);
@@ -119,7 +120,7 @@ export function Particles() {
   return (
     <canvas
       ref={canvasRef}
-      className="absolute inset-0 z-0 h-full w-full opacity-30"
+      className={cn("absolute inset-0 z-0 h-full w-full opacity-30", className)}
     />
   );
 }

@@ -2,8 +2,9 @@
 
 import { useEffect, useState } from "react";
 import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 
-export function AnimatedBackground() {
+export function AnimatedBackground({ className }: { className?: string }) {
   const [mousePosition, setMousePosition] = useState({ x: 0, y: 0 });
 
   useEffect(() => {
@@ -19,7 +20,7 @@ export function AnimatedBackground() {
   }, []);
 
   return (
-    <div className="absolute inset-0 z-0 overflow-hidden">
+    <div className={cn("absolute inset-0 z-0 overflow-hidden", className)}>
       <motion.div
         className="absolute -top-24 -left-24 h-96 w-96 rounded-full bg-purple-500 opacity-30 blur-[120px]"
         animate={{
