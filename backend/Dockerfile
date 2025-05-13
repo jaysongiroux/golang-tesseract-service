@@ -41,12 +41,18 @@ RUN apt update \
     python3-pip \
     python3 \
     libgl1-mesa-glx \
-    libglib2.0-0
+    libglib2.0-0 \
+    # cleanup
+    && apt-get autoremove -y \
+    && apt-get clean -y \
+    && rm -rf /var/lib/apt/lists
 
 RUN pip3 install --break-system-packages -r /usr/local/bin/requirements.txt
 
-# download the easyocr models
-RUN python3 /usr/local/bin/scripts/easy.py load
+
+RUN python3 /usr/local/bin/scripts/easyocr_ocr.py load
+
+RUN python3 /usr/local/bin/scripts/doctr_ocr.py load
 
 RUN apt-get autoremove -y \
     && apt-get clean -y \

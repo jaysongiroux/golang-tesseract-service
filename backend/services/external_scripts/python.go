@@ -9,9 +9,13 @@ import (
 	"serverless-tesseract/utils"
 )
 
+const (
+	SCRIPT_PATH = "/usr/local/bin/scripts/"
+)
+
 func ExecutePythonOCREngineScript(scriptPath string, imageBytes []byte, args ...string) (utils.OCRResponseList, error) {
 	// Construct full command with Python script and args
-	log.Println("Executing python with the following args: ", append([]string{"./scripts/" + scriptPath}, args...))
+	log.Println("Executing python with the following args: ", append([]string{SCRIPT_PATH + scriptPath}, args...))
 	cmd := exec.Command("python3", append([]string{"./scripts/" + scriptPath}, args...)...)
 
 	// Create pipes for stdin and capture stdout/stderr

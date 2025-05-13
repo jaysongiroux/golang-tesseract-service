@@ -26,7 +26,7 @@ func tesseractOCR(imageBytes []byte, pageNumber int, raw bool) (utils.OCRRespons
 	if raw {
 		args = append(args, "raw")
 	}
-	return externalscripts.ExecutePythonOCREngineScript("tesseract.py", imageBytes, args...)
+	return externalscripts.ExecutePythonOCREngineScript("tesseract_ocr.py", imageBytes, args...)
 }
 
 func easyOCR(imageBytes []byte, pageNumber int, raw bool) (utils.OCRResponseList, error) {
@@ -34,14 +34,13 @@ func easyOCR(imageBytes []byte, pageNumber int, raw bool) (utils.OCRResponseList
 	if raw {
 		args = append(args, "raw")
 	}
-	return externalscripts.ExecutePythonOCREngineScript("easy.py", imageBytes, args...)
+	return externalscripts.ExecutePythonOCREngineScript("easyocr_ocr.py", imageBytes, args...)
 }
 
 func doctrOCR(imageBytes []byte, pageNumber int, raw bool) (utils.OCRResponseList, error) {
-	// args := []string{strconv.Itoa(pageNumber)}
-	// if raw {
-	// 	args = append(args, "raw")
-	// }
-	// return externalscripts.ExecutePythonOCREngineScript("doctr.py", imageBytes, args...)
-	return utils.OCRResponseList{}, fmt.Errorf("doctr not implemented")
+	args := []string{strconv.Itoa(pageNumber)}
+	if raw {
+		args = append(args, "raw")
+	}
+	return externalscripts.ExecutePythonOCREngineScript("doctr_ocr.py", imageBytes, args...)
 }

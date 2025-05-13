@@ -30,6 +30,8 @@ import {
 import { cn } from "@/lib/utils";
 import { OCRResponseList } from "@/lib/types";
 import SyntaxCodeBlock from "./SyntaxCodeBlock";
+import { CodeBlock } from "./code-block";
+import { toast } from "sonner";
 
 export function ProcessDocumentDrawer({}) {
   const { selectedOrg } = useUser();
@@ -85,6 +87,7 @@ export function ProcessDocumentDrawer({}) {
       }
       formData.append("cache_policy", cachePolicy);
       formData.append("engine", engine);
+      const startTime = Date.now();
       const resp = await fetch(
         `${process.env.NEXT_PUBLIC_SERVICE_BACKEND_URL}/api/service/ocr`,
         {
@@ -95,7 +98,7 @@ export function ProcessDocumentDrawer({}) {
           },
         }
       );
-
+      const endTime = Date.now();
       const data = (await resp.json()) as OCRResponseList | { error: string };
 
       if ("error" in data) {
@@ -105,6 +108,7 @@ export function ProcessDocumentDrawer({}) {
       }
 
       if ("ocr_responses" in data) {
+        toast.success(`Processed document in ${endTime - startTime}ms`);
         setResults(JSON.stringify(data, null, 2));
       }
     } catch (err) {
@@ -150,7 +154,7 @@ export function ProcessDocumentDrawer({}) {
         </Button>
       </div>
 
-      <DialogContent className="min-w-[90%] w-full h-[90%] max-h-[90%] flex flex-col">
+      <DialogContent className="bg-slate-900 min-w-[90%] w-full h-[90%] max-h-[90%] flex flex-col">
         <DialogHeader className="p-0 m-0 mb-0 py-0 pb-0">
           <div className="flex items-center justify-between gap-4">
             <div className="flex flex-col gap-2">
@@ -177,7 +181,7 @@ export function ProcessDocumentDrawer({}) {
               <div className="space-y-2">
                 <Label htmlFor="document">Upload Document</Label>
                 {file ? (
-                  <Card className="border-slate-800 bg-slate-900 text-slate-50 ">
+                  <Card className="border-slate-800 bg-slate-800 text-slate-50 ">
                     <CardContent className="flex items-center justify-between gap-4">
                       <div className="flex items-center gap-2">
                         <File className="w-8 h-8" />
@@ -326,8 +330,11 @@ export function ProcessDocumentDrawer({}) {
                 results && "md:w-2/3 w-full opacity-100"
               )}
             >
-              <label className="text-sm text-slate-500">Results</label>
-              <SyntaxCodeBlock lang="json">{results}</SyntaxCodeBlock>
+              <CodeBlock
+                language="JSON"
+                codeString={results}
+                code={<SyntaxCodeBlock lang="json">{results}</SyntaxCodeBlock>}
+              />
             </div>
           </div>
         </div>
