@@ -3,9 +3,16 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 
-const DashboardNavItem = ({ name, href, icon }) => {
+const DashboardNavItem = ({
+  name,
+  href,
+  icon,
+}: {
+  name: string;
+  href: string;
+  icon: React.ReactNode;
+}) => {
   const pathname = usePathname();
-
   const isActive = pathname === href;
   return (
     <Link
